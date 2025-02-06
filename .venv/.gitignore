@@ -1,0 +1,8 @@
+# created by virtualenv automatically
+__pycache__/  # Python bytecode
+*.pyc         # Python bytecode
+.venv/         # Virtual environment (if you're using one)
+venv/
+*.DS_Store    # macOS Finder files
+.idea/         # IntelliJ IDEA files
+*.log         # Log files
