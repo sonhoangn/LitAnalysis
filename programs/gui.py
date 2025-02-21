@@ -1,10 +1,11 @@
 import sys
 import re
 import datetime
+import os
 import threading
 import main
 from pathlib import Path
-from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage, messagebox
+from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage, messagebox, filedialog, ttk
 import tkinter
 
 
@@ -54,20 +55,38 @@ except FileNotFoundError:
 except Exception as e:
     print(f"{ct()} - Error loading icon: {e}\n")
 
+# Choose directory
+directory = None
+def choose_dir():
+    global directory
+    directory = filedialog.askdirectory(title="Select Folder containing research papers.")
+    if directory:
+        browse_dir.delete(0, "end")
+        browse_dir.insert(0, directory)
+        print(f"{ct()} - All PDF(s) in {directory} to be processed are: ")
+        el_files = [f for f in os.listdir(directory) if f.endswith((".pdf"))]
+        index = 1
+        for file in el_files:
+            print(f"{index}. ", file)
+            index += 1
+    else:
+        print(f"{ct()}No folder selected, please choose a folder containing research papers to begin processing!")
+    return directory
+
 entry_image_1 = PhotoImage(
-    file=relative_to_assets("entry_1.png"))
+    file=relative_to_assets("input.png"))
 entry_bg_1 = canvas.create_image(
     205.5,
     62.0,
     image=entry_image_1
 )
-entry_1 = Entry(
+browse_dir = Entry(
     bd=0,
     bg="#FFFFFF",
     fg="#000716",
     highlightthickness=0
 )
-entry_1.place(
+browse_dir.place(
     x=40.0,
     y=51.0,
     width=331.0,
@@ -94,20 +113,22 @@ apikey_input.place(
     height=20.0
 )
 
+# LLM Selection box
+llm_options = ["gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-1.5-pro", "gemini-2.0-flash", "gemini-2.0-flash-lite-preview-02-05"]
 entry_image_3 = PhotoImage(
-    file=relative_to_assets("entry_3.png"))
+    file=relative_to_assets("input.png"))
 entry_bg_3 = canvas.create_image(
     642.5,
     118.0,
     image=entry_image_3
 )
-entry_3 = Entry(
-    bd=0,
-    bg="#FFFFFF",
-    fg="#000716",
-    highlightthickness=0
+llm_combobox = ttk.Combobox(
+    window,
+    values=llm_options,
+    state="readonly",
+    width=329
 )
-entry_3.place(
+llm_combobox.place(
     x=477.0,
     y=107.0,
     width=331.0,
@@ -115,28 +136,28 @@ entry_3.place(
 )
 
 button_image_1 = PhotoImage(
-    file=relative_to_assets("button_1.png"))
-button_1 = Button(
+    file=relative_to_assets("ba.png"))
+analysis_button = Button(
     image=button_image_1,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_1 clicked"),
+    command=lambda: print("Basic Analysis."),
     relief="flat"
 )
-button_1.place(
-    x=31.0,
+analysis_button.place(
+    x=30.0,
     y=101.0,
-    width=146.0,
+    width=143.0,
     height=34.0
 )
 
 button_image_2 = PhotoImage(
-    file=relative_to_assets("button_2.png"))
+    file=relative_to_assets("qe.png"))
 button_2 = Button(
     image=button_image_2,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_2 clicked"),
+    command=lambda: print("Quotes Extraction"),
     relief="flat"
 )
 button_2.place(
@@ -172,14 +193,25 @@ apikey_confirm.place(
     width=40.0,
     height=40.0
 )
+# Save LLM Selection
+llm_selection = None
+def save_llm_selection():
+    global llm_selection
+    llm_selection = llm_combobox.get()
+    if not llm_selection:
+        messagebox.showwarning("Warning", "No LLM selection detected!")
+        return
+    print(f"{ct()} - LLM: {llm_selection}, selected!\n")
+    return llm_selection
 
+# LLM Select
 button_image_4 = PhotoImage(
     file=relative_to_assets("check.png"))
 llm_select = Button(
     image=button_image_4,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("LLM selected."),
+    command=save_llm_selection,
     relief="flat"
 )
 llm_select.place(
@@ -195,7 +227,10 @@ info = Button(
     image=button_image_5,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("Info clicked"),
+    command=lambda: print(f"{ct()} - Created by Nguyen, Son Hoang & Le, Thi Dieu Ly."
+                          "\nKindly refer to all source codes and revisions on:"
+                          "\nhttps://github.com/sonhoangn/LitAnalysis/tree/main/programs"
+                          "\nUsage: This program leverages different Gemini models from Google using Google-provided API key to help analyzing research papers in PDF form.\n"),
     relief="flat"
 )
 info.place(
@@ -205,13 +240,14 @@ info.place(
     height=40.0
 )
 
+# Browse directory
 button_image_6 = PhotoImage(
     file=relative_to_assets("browse.png"))
 browse = Button(
     image=button_image_6,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("Browse button clicked"),
+    command=choose_dir,
     relief="flat"
 )
 browse.place(
