@@ -135,22 +135,6 @@ llm_combobox.place(
     height=20.0
 )
 
-button_image_1 = PhotoImage(
-    file=relative_to_assets("ba.png"))
-analysis_button = Button(
-    image=button_image_1,
-    borderwidth=0,
-    highlightthickness=0,
-    command=lambda: print("Basic Analysis."),
-    relief="flat"
-)
-analysis_button.place(
-    x=30.0,
-    y=101.0,
-    width=143.0,
-    height=34.0
-)
-
 button_image_2 = PhotoImage(
     file=relative_to_assets("qe.png"))
 button_2 = Button(
@@ -276,6 +260,36 @@ terminal.place(
     y=164.0,
     width=828.0,
     height=266.0
+)
+
+# Main function
+def start_analysis():
+    global API_KEY, llm_selection, directory
+    if not API_KEY or not llm_selection or not  directory:
+        print(f"{ct()} - Insufficient data provided (Either no PDF found or missing API key or missing LLM), kindly double check your input!")
+        return
+    print(f"{ct()} - Start analyzing PDFs found in: {directory}, LLM: {llm_selection}, API Key: {API_KEY}\n")
+    def thread_process():
+        main.main(directory,API_KEY,llm_selection)
+
+    thread=threading.Thread(target=thread_process)
+    thread.start()
+    print(f"{ct()} - Basic Analysis in progress, please wait...")
+
+button_image_1 = PhotoImage(
+    file=relative_to_assets("ba.png"))
+analysis_button = Button(
+    image=button_image_1,
+    borderwidth=0,
+    highlightthickness=0,
+    command=start_analysis,
+    relief="flat"
+)
+analysis_button.place(
+    x=30.0,
+    y=101.0,
+    width=143.0,
+    height=34.0
 )
 
 # Redirect stdout to the terminal area

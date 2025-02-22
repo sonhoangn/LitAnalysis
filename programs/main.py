@@ -34,7 +34,7 @@ def pdf_text_extraction(filepath):
         return f"{ct()} - Error extracting text: {e}"
 
 # Set up instruction
-def genai_config():
+def genai_config(key, model):
     s_instructions="""
     You are an expert researcher and educator, who is well versed in the field of circular economy, sustainable manufacturing and various digital learning and teaching methodologies, also known as e-learning tools. Your primary goal is to assess whether a research paper does indeed provided relevant data and information to help with the effort to design an e-learning platform for circular economy competencies that aims at the development of a tailored concept for the Berlin industrial SME sector.
 
@@ -180,10 +180,62 @@ def genai_config():
     #
     # """
 
-    api_key = input(f"{ct()} - Input API Key: ")
+    api_key = key
     if api_key:
-        llm  = input(f"{ct()} - Choose LLM (gemini-1.5-flash, gemini-1.5-flash-8b, gemini-1.5-pro, gemini-2.0-flash, gemini-2.0-flash-lite-preview-02-05): \n")
+        llm  = model
         if llm=="gemini-1.5-flash" or llm=="gemini-1.5-flash-8b" or llm=="gemini-1.5-pro" or llm=="gemini-2.0-flash" or llm=="gemini-2.0-flash-lite-preview-02-05":
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel(
+                model_name=llm,
+                system_instruction=s_instructions
+            )
+            return model
+        else:
+            return f"{ct()} - Invalid LLM selection. Exiting..."
+    else:
+        return f"{ct()} - No API Key found. Exiting..."
+
+# Set up instruction
+def genai_config_qe(key, model):
+    s_instructions = """
+    You are an expert researcher and educator, who is well versed in the field of circular economy, sustainable manufacturing and various digital learning and teaching methodologies, also known as e-learning tools. Your primary goal is to analyze research papers and extract any relevant data and information that could help with the effort to design an e-learning platform for circular economy competencies that aims at the development of a tailored concept for the Berlin industrial SME sector.
+
+    Instructions:
+
+    1. Analyze Research Paper Content and extract any information that is relevant and useful for the aforementioned goals. Return the response as N/A in case the Research Paper does not contain any relevant information or data related to the aforementioned goals.
+    2. Cite the exact sentences and/or data found in the Research Paper Content that is most relevant to the goal of the Research Paper.
+    3. Follow the list of main goals and key areas of interest to extract the information accordingly.
+    5. Provide 5 most importance sentences and/or data found in the Research Paper Content following the Response format.
+
+    Main Goals and Key Areas of Interest:
+
+    1. Circular Economy Concept.
+    2. E-learning (Please specify, no more than 5 words)
+    3. Industrial SME Sector.
+    4. Applications of E-learning within the context of Circular Economy.
+    5. Others (Please specify, no more than 5 words).
+
+    Response format: (Strictly adhere to this format)
+
+    - Quote 1: quote. (Area)
+    - Quote 2: quote. (Area)
+    - Quote 3: quote. (Area)
+    - Quote 4: quote. (Area)
+    - Quote 5: quote. (Area)
+
+    Response Example:
+
+    - Quote 1: "First, interest towards the use of AR technology in industrial operations is increasing over time, as highlighted by the growing number of recent papers focusing on AR usage in industry.". (Others - Augmented Reality) 
+    _ Quote 2: "... it can be concluded that AR shows great application potential in many industrial operations, and in particular, in the field of maintenance and assembly.". (Others - Augmented Reality)
+    - Quote 3: "Other interesting application fields (such as safety, ergonomics or remote collaboration) have emerged recently; although they are now investigated with good continuity, the number of studies found is still limited and suggests that the potential of AR in these contexts has not yet been fully explored.". (Others - Augmented Reality)
+    - Quote 4: "". ()
+    - Quote 5: "". ()
+    
+    """
+    api_key = key
+    if api_key:
+        llm = model
+        if llm == "gemini-1.5-flash" or llm == "gemini-1.5-flash-8b" or llm == "gemini-1.5-pro" or llm == "gemini-2.0-flash" or llm == "gemini-2.0-flash-lite-preview-02-05":
             genai.configure(api_key=api_key)
             model = genai.GenerativeModel(
                 model_name=llm,
@@ -382,11 +434,11 @@ def browser_display(df):
         print(f"{ct()} - Error displaying results in the default web browser: {e}.")
 
 # Main function
-def main():
-    file_path=input(f"{ct()} - Input documents dir: ")
+def main(path, key, llm):
+    file_path=path
     if file_path:
         # content=pdf_text_extraction(file_path)
-        model=genai_config()
+        model=genai_config(key, llm)
         df=process_loop(file_path,model)
         excel_export(df)
         # response_data_extraction(content,model)
