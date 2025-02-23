@@ -228,8 +228,8 @@ def genai_config_qe(key, model):
     - Quote 1: "First, interest towards the use of AR technology in industrial operations is increasing over time, as highlighted by the growing number of recent papers focusing on AR usage in industry.". (Others - Augmented Reality) 
     _ Quote 2: "... it can be concluded that AR shows great application potential in many industrial operations, and in particular, in the field of maintenance and assembly.". (Others - Augmented Reality)
     - Quote 3: "Other interesting application fields (such as safety, ergonomics or remote collaboration) have emerged recently; although they are now investigated with good continuity, the number of studies found is still limited and suggests that the potential of AR in these contexts has not yet been fully explored.". (Others - Augmented Reality)
-    - Quote 4: "". ()
-    - Quote 5: "". ()
+    - Quote 4: "Microlearning is a pedagogical strategy that creates “bite-sized” units of information for learners. The bite-sized pieces are given in short modules, helping to motivate and restructure the ways in which learners absorb knowledge.". (E-Learning - Micro-learning)
+    - Quote 5: "Digitization in education simplifies organizational tasks. For example, electronic university learning platforms make it easier for students to report, outline and assess learning material.". (E-Learning)
     
     """
     api_key = key
