@@ -329,12 +329,6 @@ def response_data_extraction(data, model):
         else:
             reliability = "N/A"
 
-        line1 = [line for line in response.text.split("\n") if line.startswith("- Quotes: ")]
-        if line1:
-            quotes = line1[0].split(": ")[1].strip()
-        else:
-            quotes = "N/A"
-
         line1 = [line for line in response.text.split("\n") if line.startswith("- Reference: ")]
         if line1:
             reference = line1[0].split(": ")[1].strip()
@@ -352,7 +346,6 @@ def response_data_extraction(data, model):
         purpose = "N/A"
         discussion = "N/A"
         reliability = "N/A"
-        quotes = "N/A"
         reference = "N/A"
 
     # Turn these on while performing debug
@@ -368,7 +361,7 @@ def response_data_extraction(data, model):
     #       f"\n - Discussion: {discussion}."
     #       f"\n - Reliability: {reliability}."
     #       f"\n - Reference: {reference}")
-    return relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, quotes, reference
+    return relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, reference
 
 # Quote extraction
 def quotes_extraction(data, model):
@@ -428,13 +421,17 @@ def process_loop(dir, model):
                 print(content)
                 continue
 
-            relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, quotes, reference=response_data_extraction(content, model)
+            # relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, quotes, reference=response_data_extraction(content, model)
+            #
+            # results.append((index, filename, relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, quotes, reference))
 
-            results.append((index, filename, relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, quotes, reference))
+            relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, reference=response_data_extraction(content, model)
+
+            results.append((index, filename, relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, reference))
             index+=1
             print(f"{ct()} - Completed analyzing document: {filename}.\n")
     print(f"{ct()} - All PDF files in {dir} have been processed. Exporting to data table...")
-    df_results = pd.DataFrame(results, columns=["No.", "Title", "Relevance", "Relevance Level", "Key Areas of Interest", "Research Goal", "Research Category", "Research Type", "Summary", "Methodologies Used", "Research Purpose", "Discussions Addressed", "Reliability Level", "Quotes", "Reference"])
+    df_results = pd.DataFrame(results, columns=["No.", "Title", "Relevance", "Relevance Level", "Key Areas of Interest", "Research Goal", "Research Category", "Research Type", "Summary", "Methodologies Used", "Research Purpose", "Discussions Addressed", "Reliability Level", "Reference"])
     return df_results
 
 def ple(dir, model):
