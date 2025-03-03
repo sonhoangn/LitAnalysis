@@ -370,23 +370,46 @@ def response_data_extraction(data, model):
     #       f"\n - Reference: {reference}")
     return relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, quotes, reference
 
-# Process Loop
-# def process_loop(dir, model):
-#     if not os.path.isdir(dir):
-#         print(f"{ct()} - Incorrect file path.")
-#         return
-#     for filename in os.listdir(dir):
-#         if filename.endswith(".pdf"):
-#             filepath=os.path.join(dir,filename)
-#             print(f"{ct()} - Processing document: {filename}")
-#             content=pdf_text_extraction(filepath)
-#             if "Error:" in content:
-#                 print(content)
-#                 continue
-#
-#             response_data_extraction(content, model)
-#
-#     return
+# Quote extraction
+def quotes_extraction(data, model):
+
+    prompt=f"Research Paper Content: {data}"
+
+    response = model.generate_content(prompt)
+
+    print(f"{ct()} - Response is provided. Analyzing and extracting relevant information...")
+
+    line0=[line for line in response.text.split("\n") if line.startswith("- Quote 1: ")]
+    if line0:
+        q1 = line0[0].split(": ")[1].strip()
+    else:
+        q1 = "N/A"
+
+    line0=[line for line in response.text.split("\n") if line.startswith("- Quote 2: ")]
+    if line0:
+        q2 = line0[0].split(": ")[1].strip()
+    else:
+        q2 = "N/A"
+
+    line0=[line for line in response.text.split("\n") if line.startswith("- Quote 3: ")]
+    if line0:
+        q3 = line0[0].split(": ")[1].strip()
+    else:
+        q3 = "N/A"
+
+    line0=[line for line in response.text.split("\n") if line.startswith("- Quote 4: ")]
+    if line0:
+        q4 = line0[0].split(": ")[1].strip()
+    else:
+        q4 = "N/A"
+
+    line0=[line for line in response.text.split("\n") if line.startswith("- Quote 5: ")]
+    if line0:
+        q5 = line0[0].split(": ")[1].strip()
+    else:
+        q5 = "N/A"
+
+    return q1, q2, q3, q4, q5
 
 def process_loop(dir, model):
     if not os.path.isdir(dir):
@@ -414,8 +437,40 @@ def process_loop(dir, model):
     df_results = pd.DataFrame(results, columns=["No.", "Title", "Relevance", "Relevance Level", "Key Areas of Interest", "Research Goal", "Research Category", "Research Type", "Summary", "Methodologies Used", "Research Purpose", "Discussions Addressed", "Reliability Level", "Quotes", "Reference"])
     return df_results
 
+def ple(dir, model):
+    if not os.path.isdir(dir):
+        print(f"{ct()} - Incorrect file path.")
+        return
+
+    qe = []
+    index = 1
+    for filename in os.listdir(dir):
+        if filename.endswith(".pdf"):
+            filepath = os.path.join(dir, filename)
+            print(f"{ct()} - Processing document: {filename}")
+            content = pdf_text_extraction(filepath)
+            if "Error:" in content:
+                print(content)
+                continue
+
+            q1, q2, q3, q4, q5 = quotes_extraction(content,model)
+            qe.append((index, filename, q1, q2, q3, q4, q5))
+            index+=1
+            print(f"{ct()} - Completed extracting critical quotes from document: {filename}.\n")
+    print(f"{ct()} - All PDF files in {dir} have been processed. Exporting to data table...")
+    qer = pd.DataFrame(qe, columns=["No.", "Title", "Quote 1", "Quote 2", "Quote 3", "Quote 4", "Quote 5"])
+    return qer
+
 def excel_export(df):
     output_filename = PARENT_DIR / "Results.xlsx"
+    with pd.ExcelWriter(output_filename, mode='w') as writer:
+        df.to_excel(writer, sheet_name='Processed')
+    print(f"{ct()} - Results are exported to: {output_filename}.")
+    browser_display(df)
+    return
+
+def excel_export_q(df):
+    output_filename = PARENT_DIR / "Quotes.xlsx"
     with pd.ExcelWriter(output_filename, mode='w') as writer:
         df.to_excel(writer, sheet_name='Processed')
     print(f"{ct()} - Results are exported to: {output_filename}.")
@@ -437,11 +492,19 @@ def browser_display(df):
 def main(path, key, llm):
     file_path=path
     if file_path:
-        # content=pdf_text_extraction(file_path)
         model=genai_config(key, llm)
         df=process_loop(file_path,model)
         excel_export(df)
-        # response_data_extraction(content,model)
+    else:
+        return f"{ct()} - File not found. Exiting..."
+
+# Quote Extraction function
+def main_q(path, key, llm):
+    file_path=path
+    if file_path:
+        model=genai_config_qe(key, llm)
+        df=ple(file_path,model)
+        excel_export_q(df)
     else:
         return f"{ct()} - File not found. Exiting..."
 

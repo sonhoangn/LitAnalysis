@@ -135,13 +135,27 @@ llm_combobox.place(
     height=20.0
 )
 
+# Quote Extraction function
+def start_qe():
+    global API_KEY, llm_selection, directory
+    if not API_KEY or not llm_selection or not  directory:
+        print(f"{ct()} - Insufficient data provided (Either no PDF found or missing API key or missing LLM), kindly double check your input!")
+        return
+    print(f"{ct()} - Start extracting quotes for PDFs found in: {directory}, LLM: {llm_selection}, API Key: {API_KEY}\n")
+    def thread_process():
+        main.main_q(directory,API_KEY,llm_selection)
+
+    thread=threading.Thread(target=thread_process)
+    thread.start()
+    print(f"{ct()} - Quotes extraction in progress, please wait...")
+
 button_image_2 = PhotoImage(
     file=relative_to_assets("qe.png"))
 button_2 = Button(
     image=button_image_2,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("Quotes Extraction"),
+    command=start_qe,
     relief="flat"
 )
 button_2.place(
