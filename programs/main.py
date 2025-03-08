@@ -430,6 +430,7 @@ def process_loop(dir, model):
             results.append((index, filename, relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, reference))
             index+=1
             print(f"{ct()} - Completed analyzing document: {filename}.\n")
+            time.sleep(6)
     print(f"{ct()} - All PDF files in {dir} have been processed. Exporting to data table...")
     df_results = pd.DataFrame(results, columns=["No.", "Title", "Relevance", "Relevance Level", "Key Areas of Interest", "Research Goal", "Research Category", "Research Type", "Summary", "Methodologies Used", "Research Purpose", "Discussions Addressed", "Reliability Level", "Reference"])
     return df_results
@@ -454,6 +455,7 @@ def ple(dir, model):
             qe.append((index, filename, q1, q2, q3, q4, q5))
             index+=1
             print(f"{ct()} - Completed extracting critical quotes from document: {filename}.\n")
+            time.sleep(6)
     print(f"{ct()} - All PDF files in {dir} have been processed. Exporting to data table...")
     qer = pd.DataFrame(qe, columns=["No.", "Title", "Quote 1", "Quote 2", "Quote 3", "Quote 4", "Quote 5"])
     return qer
