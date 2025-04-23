@@ -232,7 +232,7 @@ def genai_config_qe(key, model):
     - Quote 3: quote. (Area)
     - Quote 4: quote. (Area)
     - Quote 5: quote. (Area)
-    - Quote 6: quote. (This is the key research question found in the paper)
+    - Quote 6: quote. (Key research question found in the paper)
 
     Response Example:
 
