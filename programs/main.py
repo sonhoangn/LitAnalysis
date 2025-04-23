@@ -41,14 +41,15 @@ def genai_config(key, model):
     Instructions:
 
     1. Analyze Research Paper Content and determine if the provided paper could provide relevant and useful data for the aforementioned goals. If the Content of Research Paper does not show any relevance to the aforementioned goals, categorize the Relevance as N/A.
-    2. Explain the goal of the Research Paper based on its content in a concise manner.
-    3. Thoroughly analyze the Research Paper Content and provide an accurate summary of the content including the goals, methodologies used, results, discussions and conclusions from the author(s).
-    4. Provide suggestion on whether the Research Paper Content is reliable whose data could then be utilized to help with the aforementioned goals.
-    5. Decide whether the Research Paper is a Qualitative or a Quantitative one based on its content.
-    6. Identify Key Areas of Interest in the Research Paper based on the example list below.
-    7. Based on the content decide whether the Research Paper belongs to any of most common types of research papers as listed below.
-    8. Cite the exact sentences and/or data found in the Research Paper Content that is most relevant to the goal of the Research Paper.
-    9. Provide an APA Citation for the Research Paper following the style of the APA 7th Edition.
+    2. Identify the main research questions outlined by the author of the research paper.
+    3. Explain the goal of the Research Paper based on its content in a concise manner.
+    4. Thoroughly analyze the Research Paper Content and provide an accurate summary of the content including the goals, methodologies used, results, discussions and conclusions from the author(s).
+    5. Provide suggestion on whether the Research Paper Content is reliable whose data could then be utilized to help with the aforementioned goals.
+    6. Decide whether the Research Paper is a Qualitative or a Quantitative one based on its content.
+    7. Identify Key Areas of Interest in the Research Paper based on the example list below.
+    8. Based on the content decide whether the Research Paper belongs to any of most common types of research papers as listed below.
+    9. Cite the exact sentences and/or data found in the Research Paper Content that is most relevant to the goal of the Research Paper.
+    10. Provide an APA Citation for the Research Paper following the style of the APA 7th Edition.
 
     Key Areas of Interest:
 
@@ -74,6 +75,7 @@ def genai_config(key, model):
     - Relevance: N/A or Yes. If Relevance is N/A then the other sections in the response must also be N/A.
     - Relevance level: Low, Medium or High.
     - Key Areas of Interest: key areas of interest.
+    - Research question: Questions to be answered by the research.
     - Research goal: Goal.
     - Research category: Qualitative or Quantitative.
     - Research type: Select from the list of common types of research papers.
@@ -82,7 +84,10 @@ def genai_config(key, model):
     - Research Purpose: Theoretical or Applied.
     - Research discussion: key discussions (no more than 2 sentences).
     - Research reliability: Low or High.
-    - Quotes: quotes.
+    - Quote 1: quote. (Must be relevant to Key Areas of Interest)
+    - Quote 2: quote. (Must be relevant to Research Question, up to 3 questions only)
+    - Quote 3: quote. (Must be relevant to Research goal)
+    - Quote 4: quote. (Must be relevant to Research methodology)
     - Reference: APA 7th Edition style.
     
     Response Example:
@@ -90,7 +95,8 @@ def genai_config(key, model):
     - Relevance: Yes.
     - Relevance level: High.
     - Key Areas of Interest: Circular Economy Concept.
-    - Research goal: Classification of all researches on Augmented Reality (AR) technology applications in the manufacturing industry from 2006 to early 2017.
+    - Research question: "What are the emerging trends and theories applied in the research of CE adoption in SMEs?", "What are the drivers/enablers, issues, and challenges linked to the adoption of the CE in SMEs?", "What strategies (e.g., energy and resource efficiency, waste management, wellbeing, corporate social responsibility), practices, and frameworks are utilized for CE adoption in SMEs?"
+    - Research goal: Consolidate Current Trends, Practical Challenges and Future Research Agenda for SMEs within the context of Circular Economy Adoption.
     - Research category: Qualitative.
     - Research type: Literature Review.
     - Research summary: This study reviews Augmented Reality (AR) applications in the manufacturing industry from 2006-2017, categorizing the literature to highlight the technology's deployment areas, solutions, and benefits. It identifies assembly and maintenance as key application fields, noting an increasing interest in AR for industrial operations..
@@ -98,7 +104,10 @@ def genai_config(key, model):
     - Research Purpose: Theoretical.
     - Research discussion: The review indicates a growing interest in AR within industrial operations, particularly in assembly and maintenance, and highlights the increasing adoption of mobile devices and HMDs for AR implementation. It also points out the need for further research in unexplored areas and economic assessments of AR solutions..
     - Research reliability: High.
-    - Quotes: "First, interest towards the use of AR technology in industrial operations is increasing over time, as highlighted by the growing number of recent papers focusing on AR usage in industry.", "... it can be concluded that AR shows great application potential in many industrial operations, and in particular, in the field of maintenance and assembly.", "Other interesting application fields (such as safety, ergonomics or remote collaboration) have emerged recently; although they are now investigated with good continuity, the number of studies found is still limited and suggests that the potential of AR in these contexts has not yet been fully explored.", etc.
+    - Quote 1: "Circular Economy is an economic system aimed at eliminating waste and the continual use of resources through principles such as recycling, reuse, and resource efficiency. It contrasts with the traditional linear economy, which typically follows a "take, make, dispose" model."
+    - Quote 2: "Conducting a structured literature review, using secondary data from published articles in peer-reviewed journals published between 2010 and 2024 through content and meta analysis, we address the below Research Questions (RQs). RQ1: What are the emerging trends and theories applied in the research of CE adoption in SMEs? RQ2: What are the drivers/enablers, issues, and challenges linked to the adoption of the CE in SMEs? RQ3: What strategies (e.g., energy and resource efficiency, waste management, wellbeing, corporate social responsibility), practices, and frameworks are utilized for CE adoption in SMEs?"
+    - Quote 3: "The literature so far has mostly focused on supply chains or large corporations. Thus, our review identifies specific drivers, challenges, and strategies related to the CE in SMEs. There are existing papers on the implementation of the CE from a supply chain perspective. This study helps in the adoption of the CE from an SME perspective through a framework grounded in the literature."
+    - Quote 4: "This study adopts a structured literature review approach. To achieve the aims of the research the authors have adapted the systematic review procedures outlined by [49] that consist of three stages: planning, execution, and reporting. The approach has been followed to combat the potential effect of researchers’ bias and to ensure that a traceable path has been followed.", " In order to achieve up-to-date reporting guidance, we also followed the Preferred Reporting Items for Systematic Reviews and Meta-Analysis (PRISMA) statement published in 2020. As mentioned by [52], “familiarity with PRISMA 2020 statement is useful when planning and conducting systematic reviews to ensure that all recommended information is captured”."
     - Reference: Mura, M. D., & Dini, G. (2021). Augmented reality in assembly Systems: state of the art and future perspectives. In IFIP advances in information and communication technology (pp. 3–22). https://doi.org/10.1007/978-3-030-72632-4_1.
     
     """
@@ -329,6 +338,30 @@ def response_data_extraction(data, model):
         else:
             reliability = "N/A"
 
+        line1 = [line for line in response.text.split("\n") if line.startswith("- Quote 1: ")]
+        if line1:
+            quote1 = line1[0].split(": ")[1].strip()
+        else:
+            quote1 = "N/A"
+
+        line1 = [line for line in response.text.split("\n") if line.startswith("- Quote 2: ")]
+        if line1:
+            quote2 = line1[0].split(": ")[1].strip()
+        else:
+            quote2 = "N/A"
+
+        line1 = [line for line in response.text.split("\n") if line.startswith("- Quote 3: ")]
+        if line1:
+            quote3 = line1[0].split(": ")[1].strip()
+        else:
+            quote3 = "N/A"
+
+        line1 = [line for line in response.text.split("\n") if line.startswith("- Quote 4: ")]
+        if line1:
+            quote4 = line1[0].split(": ")[1].strip()
+        else:
+            quote4 = "N/A"
+
         line1 = [line for line in response.text.split("\n") if line.startswith("- Reference: ")]
         if line1:
             reference = line1[0].split(": ")[1].strip()
@@ -347,6 +380,10 @@ def response_data_extraction(data, model):
         discussion = "N/A"
         reliability = "N/A"
         reference = "N/A"
+        quote1 = "N/A"
+        quote2 = "N/A"
+        quote3 = "N/A"
+        quote4 = "N/A"
 
     # Turn these on while performing debug
     # print(f"{ct()} - Relevance: {relevance}."
@@ -361,7 +398,7 @@ def response_data_extraction(data, model):
     #       f"\n - Discussion: {discussion}."
     #       f"\n - Reliability: {reliability}."
     #       f"\n - Reference: {reference}")
-    return relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, reference
+    return relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, reference, quote1, quote2, quote3, quote4
 
 # Quote extraction
 def quotes_extraction(data, model):
@@ -425,14 +462,14 @@ def process_loop(dir, model):
             #
             # results.append((index, filename, relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, quotes, reference))
 
-            relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, reference=response_data_extraction(content, model)
+            relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, reference, quote1, quote2, quote3, quote4=response_data_extraction(content, model)
 
-            results.append((index, filename, relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, reference))
+            results.append((index, filename, relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, quote1, quote2, quote3, quote4, reference))
             index+=1
             print(f"{ct()} - Completed analyzing document: {filename}.\n")
             time.sleep(6)
     print(f"{ct()} - All PDF files in {dir} have been processed. Exporting to data table...")
-    df_results = pd.DataFrame(results, columns=["No.", "Title", "Relevance", "Relevance Level", "Key Areas of Interest", "Research Goal", "Research Category", "Research Type", "Summary", "Methodologies Used", "Research Purpose", "Discussions Addressed", "Reliability Level", "Reference"])
+    df_results = pd.DataFrame(results, columns=["No.", "Title", "Relevance", "Relevance Level", "Key Areas of Interest", "Research Goal", "Research Category", "Research Type", "Summary", "Methodologies Used", "Research Purpose", "Discussions Addressed", "Reliability Level", "Quote 1 - Key Area of Interest", "Quote 2 - Research Question", "Quote 3 - Research Goal", "Quote 4 - Methodology", "Reference"])
     return df_results
 
 def ple(dir, model):
