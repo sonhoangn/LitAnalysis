@@ -214,6 +214,7 @@ def genai_config_qe(key, model):
     1. Analyze Research Paper Content and extract any information that is relevant and useful for the aforementioned goals. Return the response as N/A in case the Research Paper does not contain any relevant information or data related to the aforementioned goals.
     2. Cite the exact sentences and/or data found in the Research Paper Content that is most relevant to the goal of the Research Paper.
     3. Follow the list of main goals and key areas of interest to extract the information accordingly.
+    4. Quote the main key research question found in the research paper.
     5. Provide 5 most importance sentences and/or data found in the Research Paper Content following the Response format.
 
     Main Goals and Key Areas of Interest:
@@ -231,6 +232,7 @@ def genai_config_qe(key, model):
     - Quote 3: quote. (Area)
     - Quote 4: quote. (Area)
     - Quote 5: quote. (Area)
+    - Quote 6: quote. (This is the key research question found in the paper)
 
     Response Example:
 
@@ -239,7 +241,7 @@ def genai_config_qe(key, model):
     - Quote 3: "Other interesting application fields (such as safety, ergonomics or remote collaboration) have emerged recently; although they are now investigated with good continuity, the number of studies found is still limited and suggests that the potential of AR in these contexts has not yet been fully explored.". (Others - Augmented Reality)
     - Quote 4: "Microlearning is a pedagogical strategy that creates “bite-sized” units of information for learners. The bite-sized pieces are given in short modules, helping to motivate and restructure the ways in which learners absorb knowledge.". (E-Learning - Micro-learning)
     - Quote 5: "Digitization in education simplifies organizational tasks. For example, electronic university learning platforms make it easier for students to report, outline and assess learning material.". (E-Learning)
-    
+    - Quote 6: "What are the emerging trends and theories applied in the research of CE adoption in SMEs?"
     """
     api_key = key
     if api_key:
@@ -283,6 +285,12 @@ def response_data_extraction(data, model):
             rel_level = line1[0].split(": ")[1].strip()
         else:
             rel_level = "N/A"
+
+        line1=[line for line in response.text.split("\n") if line.startswith("- Research question: ")]
+        if line1:
+            research_question = line1[0].split(": ")[1].strip()
+        else:
+            research_question = "N/A"
 
         line1=[line for line in response.text.split("\n") if line.startswith("- Research goal: ")]
         if line1:
@@ -371,6 +379,7 @@ def response_data_extraction(data, model):
     else:
         rel_level = "N/A"
         area = "N/A"
+        research_question = "N/A"
         goal = "N/A"
         category = "N/A"
         rtype = "N/A"
@@ -398,7 +407,7 @@ def response_data_extraction(data, model):
     #       f"\n - Discussion: {discussion}."
     #       f"\n - Reliability: {reliability}."
     #       f"\n - Reference: {reference}")
-    return relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, reference, quote1, quote2, quote3, quote4
+    return relevance, rel_level, area, research_question, goal, category, rtype, summary, methodology, purpose, discussion, reliability, reference, quote1, quote2, quote3, quote4
 
 # Quote extraction
 def quotes_extraction(data, model):
@@ -439,7 +448,13 @@ def quotes_extraction(data, model):
     else:
         q5 = "N/A"
 
-    return q1, q2, q3, q4, q5
+    line0=[line for line in response.text.split("\n") if line.startswith("- Quote 6: ")]
+    if line0:
+        q6 = line0[0].split(": ")[1].strip()
+    else:
+        q6 = "N/A"
+
+    return q1, q2, q3, q4, q5, q6
 
 def process_loop(dir, model):
     if not os.path.isdir(dir):
@@ -462,14 +477,14 @@ def process_loop(dir, model):
             #
             # results.append((index, filename, relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, quotes, reference))
 
-            relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, reference, quote1, quote2, quote3, quote4=response_data_extraction(content, model)
+            relevance, rel_level, area, research_question, goal, category, rtype, summary, methodology, purpose, discussion, reliability, reference, quote1, quote2, quote3, quote4=response_data_extraction(content, model)
 
-            results.append((index, filename, relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, quote1, quote2, quote3, quote4, reference))
+            results.append((index, filename, relevance, rel_level, area, research_question, goal, category, rtype, summary, methodology, purpose, discussion, reliability, quote1, quote2, quote3, quote4, reference))
             index+=1
             print(f"{ct()} - Completed analyzing document: {filename}.\n")
             time.sleep(6)
     print(f"{ct()} - All PDF files in {dir} have been processed. Exporting to data table...")
-    df_results = pd.DataFrame(results, columns=["No.", "Title", "Relevance", "Relevance Level", "Key Areas of Interest", "Research Goal", "Research Category", "Research Type", "Summary", "Methodologies Used", "Research Purpose", "Discussions Addressed", "Reliability Level", "Quote 1 - Key Area of Interest", "Quote 2 - Research Question", "Quote 3 - Research Goal", "Quote 4 - Methodology", "Reference"])
+    df_results = pd.DataFrame(results, columns=["No.", "Title", "Relevance", "Relevance Level", "Key Areas of Interest", "Research Question", "Research Goal", "Research Category", "Research Type", "Summary", "Methodologies Used", "Research Purpose", "Discussions Addressed", "Reliability Level", "Quote 1 - Key Area of Interest", "Quote 2 - Research Question", "Quote 3 - Research Goal", "Quote 4 - Methodology", "Reference"])
     return df_results
 
 def ple(dir, model):
@@ -488,13 +503,13 @@ def ple(dir, model):
                 print(content)
                 continue
 
-            q1, q2, q3, q4, q5 = quotes_extraction(content,model)
-            qe.append((index, filename, q1, q2, q3, q4, q5))
+            q1, q2, q3, q4, q5, q6 = quotes_extraction(content,model)
+            qe.append((index, filename, q1, q2, q3, q4, q5, q6))
             index+=1
             print(f"{ct()} - Completed extracting critical quotes from document: {filename}.\n")
             time.sleep(6)
     print(f"{ct()} - All PDF files in {dir} have been processed. Exporting to data table...")
-    qer = pd.DataFrame(qe, columns=["No.", "Title", "Quote 1", "Quote 2", "Quote 3", "Quote 4", "Quote 5"])
+    qer = pd.DataFrame(qe, columns=["No.", "Title", "Quote 1", "Quote 2", "Quote 3", "Quote 4", "Quote 5", "Research Question"])
     return qer
 
 def excel_export(df):
