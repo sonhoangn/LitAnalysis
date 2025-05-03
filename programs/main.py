@@ -258,6 +258,82 @@ def genai_config_qe(key, model):
     else:
         return f"{ct()} - No API Key found. Exiting..."
 
+# Set up instruction
+def genai_config_d(key, model):
+    s_instructions = """
+    As an expert researcher and educator specializing in circular economy, sustainable manufacturing, and digital learning methodologies (e-learning tools), your primary task is to analyze research papers and identify the most relevant section within the provided thesis outline. Your main goal is then to extract the most pertinent text from the paper that aligns with the chosen section.
+
+    Instructions:
+
+    1. Identify the best fit: Analyze the research paper and pinpoint the single most appropriate section within the 'Outlined Structure of the Thesis' where the paper's central idea aligns.
+    2. Strict section selection: The Section number and Section name in the response must be chosen strictly from the provided 'Outlined Structure of the Thesis'. Do not create new section numbers or names.
+    3. Extract relevant text: Locate and extract the text from the research paper that is most relevant to the chosen thesis section.
+    4. Word limit: The extracted text must be less than 200 words.
+    5. Coherent extracts: The extracted text should be either full sentences or meaningful portions of text that are understandable on their own.
+    6. Strict adherence to format: Your response must strictly follow the specified 'Response Format'.
+    7. Cite accurately: Provide the full reference for the research paper in APA 7th Edition style.
+
+    Outlined Structure of the Thesis:
+
+    2	Theoretical Framework
+        2.1	The Circular Economy Fundamentals
+            2.1.1	General Definition
+            2.1.2	Key Principles
+            2.1.3	Importance and Benefits
+        2.2	Learning Concepts and E-learning Tools
+            2.2.1	Definition
+            2.2.2	Learning Concepts
+            2.2.3	E-learning Tools by Key Categories
+        2.3	The Berlin Industrial SMEs Landscape
+            2.3.1	Key Characteristics
+            2.3.2	Challenges
+            2.3.3	Opportunities
+            2.3.4	Notable CE Implementations in Businesses
+    3	Research Gap
+        3.1	CE Implementation amongst SMEs Gaps
+        3.2	Effectiveness of the CE Education Gaps
+    4	Concept Development
+        4.1	Research Direction and Assisting Tools
+        4.2	Platform Conceptualization
+            4.2.1	Successful Implementation Cases
+            4.2.2	Suitable Learning Concepts
+            4.2.3	Implementation Best Practices
+            4.2.4	Courseware and Training Curriculum
+    5	Implementation & Discussion
+        5.1	Platform Concept Overview
+        5.2	Evaluation and Discussion
+        5.3	Limitations and Future Work
+
+    Response format: (Strictly adhere to this format)
+
+    - Section number: [number]
+    - Section name: [name]
+    - Extracted from the research: [Extracted text]
+    - Reference: [APA 7th Edition style citation]
+
+    Response Example:
+
+    - Section number: 2.1.1
+    - Section name: General Definition
+    - Extracted from the research: "The circular economy (CE) has gained increasing attention in recent years as a promising approach to address environmental and economic challenges."
+    - Reference: Geissdoerfer, M., Savaget, P., Bocken, N. M. P., & Hultink, E. J. (2017). The Circular Economy–A new sustainability paradigm? *Journal of Cleaner Production*, *143*, 757-768.
+    """
+    api_key = key
+    if api_key:
+        llm = model
+        if llm == "gemini-1.5-flash" or llm == "gemini-1.5-flash-8b" or llm == "gemini-1.5-pro" or llm == "gemini-2.0-flash" or llm == "gemini-2.0-flash-lite-preview-02-05":
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel(
+                model_name=llm,
+                system_instruction=s_instructions
+            )
+            return model
+        else:
+            return f"{ct()} - Invalid LLM selection. Exiting..."
+    else:
+        return f"{ct()} - No API Key found. Exiting..."
+
+
 # Define method to extract data from response
 def response_data_extraction(data, model):
 
@@ -409,6 +485,54 @@ def response_data_extraction(data, model):
     #       f"\n - Reference: {reference}")
     return relevance, rel_level, area, research_question, goal, category, rtype, summary, methodology, purpose, discussion, reliability, reference, quote1, quote2, quote3, quote4
 
+# Define method to extract data from response
+def response_data_extraction_d(data, model):
+
+    prompt=f"This is the research paper that you need to analyze: {data}"
+    # print(prompt)
+    response = model.generate_content(prompt)
+
+    print(f"{ct()} - Response is provided. Analyzing and extracting relevant information...")
+
+    # - Reference:
+    line0=[line for line in response.text.split("\n") if line.startswith("- Section number: ")]
+    if line0:
+        section_no = line0[0].split(": ")[1].strip()
+    else:
+        section_no = "N/A"
+
+    if section_no != "N/A":
+        line1=[line for line in response.text.split("\n") if line.startswith("- Section name: ")]
+        if line1:
+            section_name = line1[0].split(": ")[1].strip()
+        else:
+            section_name = "N/A"
+
+        line1=[line for line in response.text.split("\n") if line.startswith("- Extracted from the research: ")]
+        if line1:
+            quote = line1[0].split(": ")[1].strip()
+        else:
+            quote = "N/A"
+
+        line1=[line for line in response.text.split("\n") if line.startswith("- Reference: ")]
+        if line1:
+            ref = line1[0].split(": ")[1].strip()
+        else:
+            ref = "N/A"
+
+    else:
+        section_name = "N/A"
+        quote = "N/A"
+        ref = "N/A"
+
+    # Turn these on while performing debug
+    # print(f"{ct()} - Section number: {section_no}."
+    #       f"\n - Section name: {section_name}."
+    #       f"\n - Reason: {reason}."
+    #       f"\n - Quote: {quote}."
+    #       f"\n - Reference: {ref}.")
+    return section_no, section_name, quote, ref
+
 # Quote extraction
 def quotes_extraction(data, model):
 
@@ -456,7 +580,7 @@ def quotes_extraction(data, model):
 
     return q1, q2, q3, q4, q5, q6
 
-def process_loop(dir, model):
+def process_loop_b(dir, model):
     if not os.path.isdir(dir):
         print(f"{ct()} - Incorrect file path.")
         return
@@ -487,6 +611,32 @@ def process_loop(dir, model):
     df_results = pd.DataFrame(results, columns=["No.", "Title", "Relevance", "Relevance Level", "Key Areas of Interest", "Research Question", "Research Goal", "Research Category", "Research Type", "Summary", "Methodologies Used", "Research Purpose", "Discussions Addressed", "Reliability Level", "Quote 1 - Key Area of Interest", "Quote 2 - Research Question", "Quote 3 - Research Goal", "Quote 4 - Methodology", "Reference"])
     return df_results
 
+def process_loop_d(dir, model):
+    if not os.path.isdir(dir):
+        print(f"{ct()} - Incorrect file path.")
+        return
+
+    results = []
+    index = 1
+
+    for filename in os.listdir(dir):
+        if filename.endswith(".pdf"):
+            filepath = os.path.join(dir, filename)
+            print(f"{ct()} - Processing document: {filename}")
+            content = pdf_text_extraction(filepath)
+            if "Error:" in content:
+                print(content)
+                continue
+            sec_no, sec_name, quote, ref=response_data_extraction_d(content, model)
+
+            results.append((index, filename, sec_no, sec_name, quote, ref))
+            index+=1
+            print(f"{ct()} - Completed analyzing document: {filename}.\n")
+            time.sleep(6)
+    print(f"{ct()} - All PDF files in {dir} have been processed. Exporting to data table...")
+    df_results = pd.DataFrame(results, columns=["No.", "Title", "Section Number", "Section Name", "Quote", "Reference"])
+    return df_results
+
 def ple(dir, model):
     if not os.path.isdir(dir):
         print(f"{ct()} - Incorrect file path.")
@@ -512,8 +662,16 @@ def ple(dir, model):
     qer = pd.DataFrame(qe, columns=["No.", "Title", "Quote 1", "Quote 2", "Quote 3", "Quote 4", "Quote 5", "Research Question"])
     return qer
 
-def excel_export(df):
-    output_filename = PARENT_DIR / "Results.xlsx"
+def excel_export_b(df):
+    output_filename = PARENT_DIR / "Basic_Analysis_Results.xlsx"
+    with pd.ExcelWriter(output_filename, mode='w') as writer:
+        df.to_excel(writer, sheet_name='Processed')
+    print(f"{ct()} - Results are exported to: {output_filename}.")
+    browser_display(df)
+    return
+
+def excel_export_d(df):
+    output_filename = PARENT_DIR / "Detailed_Analysis_Results.xlsx"
     with pd.ExcelWriter(output_filename, mode='w') as writer:
         df.to_excel(writer, sheet_name='Processed')
     print(f"{ct()} - Results are exported to: {output_filename}.")
@@ -544,8 +702,18 @@ def main(path, key, llm):
     file_path=path
     if file_path:
         model=genai_config(key, llm)
-        df=process_loop(file_path,model)
-        excel_export(df)
+        df1=process_loop_b(file_path,model)
+        excel_export_b(df1)
+    else:
+        return f"{ct()} - File not found. Exiting..."
+
+# Main function
+def main_d(path, key, llm):
+    file_path=path
+    if file_path:
+        model_d=genai_config_d(key,llm)
+        df2=process_loop_d(file_path,model_d)
+        excel_export_d(df2)
     else:
         return f"{ct()} - File not found. Exiting..."
 

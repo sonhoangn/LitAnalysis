@@ -159,9 +159,9 @@ button_2 = Button(
     relief="flat"
 )
 button_2.place(
-    x=224.0,
+    x=293.0,
     y=101.0,
-    width=148.0,
+    width=80.0,
     height=34.0
 )
 
@@ -300,9 +300,39 @@ analysis_button = Button(
     relief="flat"
 )
 analysis_button.place(
-    x=30.0,
+    x=32.0,
     y=101.0,
-    width=143.0,
+    width=80.0,
+    height=34.0
+)
+
+# Main function
+def start_analysis_d():
+    global API_KEY, llm_selection, directory
+    if not API_KEY or not llm_selection or not  directory:
+        print(f"{ct()} - Insufficient data provided (Either no PDF found or missing API key or missing LLM), kindly double check your input!")
+        return
+    print(f"{ct()} - Start analyzing PDFs found in: {directory}, LLM: {llm_selection}, API Key: {API_KEY}\n")
+    def thread_process():
+        main.main_d(directory,API_KEY,llm_selection)
+
+    thread=threading.Thread(target=thread_process)
+    thread.start()
+    print(f"{ct()} - Basic Analysis in progress, please wait...")
+
+button_image_d = PhotoImage(
+    file=relative_to_assets("dt.png"))
+analysis_button_d = Button(
+    image=button_image_d,
+    borderwidth=0,
+    highlightthickness=0,
+    command=start_analysis_d,
+    relief="flat"
+)
+analysis_button_d.place(
+    x=161.0,
+    y=101.0,
+    width=80.0,
     height=34.0
 )
 
