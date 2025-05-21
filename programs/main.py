@@ -17,7 +17,14 @@ os.makedirs(RESULT_DIR, exist_ok=True)
 
 # Defining current timestamp
 def ct():
-    return datetime.datetime.now()
+    now = datetime.datetime.now()
+    formatted_time = now.strftime("%H:%M:%S")
+    return formatted_time
+
+def ct_o():
+    now = datetime.datetime.now()
+    formatted_time = now.strftime("%H_%M_%S")
+    return formatted_time
 
 # Extract text from pdf
 def pdf_text_extraction(filepath):
@@ -333,6 +340,169 @@ def genai_config_d(key, model):
     else:
         return f"{ct()} - No API Key found. Exiting..."
 
+def genai_config_d_2(key, model):
+    s_instructions = """
+    As an expert researcher specializing in circular economy, sustainable manufacturing, and digital learning methodologies (e-learning tools), your primary goal is to analyze a research paper and extract text that supports each section of the provided thesis outline.
+
+    Instructions:
+
+    1. Analyze for relevance: Carefully read the research paper and identify any information that directly supports or relates to each section within the 'Outlined Structure of the Thesis'.
+    2. Extract supporting text: For each section in the outline, extract the most relevant text from the research paper.
+    3. Word limit: The extracted text for each section should ideally be concise and no more than 200 words. If a single, highly relevant sentence exceeds this limit slightly, use your judgment to include it if it significantly captures the essence of the section.
+    4. Coherent extracts: The extracted text should be either full sentences or meaningful portions of text that are understandable on their own.
+    5. Handle missing information: If a specific section of the 'Outlined Structure of the Thesis' has no direct supporting information within the research paper, you must assign "N/A" to that section.
+    6. Strict adherence to format: Your response must strictly follow the specified 'Response Format'.
+    7. Cite accurately: Provide the full reference for the research paper in APA 7th Edition style at the end of your response.
+
+    Outlined Structure of the Thesis:
+
+    2.1.1	The Circular Economy Fundamentals - General Definition
+    2.1.2	The Circular Economy Fundamentals - Key Principles
+    2.1.3	The Circular Economy Fundamentals - Importance and Benefits
+    2.2.1	Learning Concepts and E-learning Tools - Definition
+    2.2.2	Learning Concepts and E-learning Tools - Learning Concepts
+    2.2.3	E-learning Tools by Key Categories
+    2.3.1	The Berlin Industrial SMEs Landscape - Key Characteristics
+    2.3.2	The Berlin Industrial SMEs Landscape - Challenges
+    2.3.3	The Berlin Industrial SMEs Landscape - Opportunities
+    2.3.4	Notable CE Implementations in Businesses
+    3.1	Research Gap - CE Implementation amongst SMEs Gaps
+    3.2	Research Gap - Effectiveness of the CE Education Gaps
+    4.2.1	Successful E-learning platform Implementations tailored to the education of the Circular Economy Cases
+    4.2.2	Suitable Learning Concepts for an E-learning platform tailored to the education of the Circular Economy
+    4.2.3	Best Practices for the implementation of an E-learning platform
+    4.2.4	Courseware and Training Curriculum of an E-learning platform tailored to the education of the Circular Economy
+
+    Response format: (Strictly adhere to this format)
+
+    - 2.1.1: [Extracted text]
+    - 2.1.2: [Extracted text]
+    - 2.1.3: [Extracted text]
+    - 2.2.1: [Extracted text]
+    - 2.2.2: [Extracted text]
+    - 2.2.3: [Extracted text]
+    - 2.3.1: [Extracted text]
+    - 2.3.2: [Extracted text]
+    - 2.3.3: [Extracted text]
+    - 2.3.4: [Extracted text]
+    - 3.1: [Extracted text]
+    - 3.2: [Extracted text]
+    - 4.2.1: [Extracted text]
+    - 4.2.2: [Extracted text]
+    - 4.2.3: [Extracted text]
+    - 4.2.4: [Extracted text]
+    - Reference: [APA 7th Edition style citation]
+
+    Response Example:
+
+    - 2.1.1: "A circular economy is defined as an economic system that aims to keep resources in use for as long as possible, extract the maximum value from them whilst in use, then recover and regenerate products and materials at the end of each service life."
+    - 2.1.2: "Key principles include designing out waste and pollution, keeping products and materials in use, and regenerating natural systems."
+    - 2.1.3: "Adopting CE strategies can lead to reduced waste, resource efficiency, and new economic opportunities."
+    - 2.2.1: "E-learning encompasses all forms of electronically supported learning and teaching."
+    - 2.2.2: "Constructivism and experiential learning are relevant frameworks for online CE education."
+    - 2.2.3: "Learning Management Systems (LMS), interactive simulations, and video conferencing platforms are examples of e-learning tools."
+    - 2.3.1: N/A
+    - 2.3.2: N/A
+    - 2.3.3: N/A
+    - 2.3.4: N/A
+    - 3.1: "SMEs often face specific barriers to CE implementation, such as limited resources and expertise."
+    - 3.2: "The effectiveness of different e-learning approaches in addressing the specific educational needs of SMEs regarding CE remains underexplored."
+    - 4.2.1: N/A
+    - 4.2.2: N/A
+    - 4.2.3: N/A
+    - 4.2.4: N/A
+    - Reference: Geissdoerfer, M., Savaget, P., Bocken, N. M. P., & Hultink, E. J. (2017). The Circular Economy–A new sustainability paradigm? *Journal of Cleaner Production*, *143*, 757-768.
+    """
+    api_key = key
+    if api_key:
+        llm = model
+        if llm == "gemini-1.5-flash" or llm == "gemini-1.5-flash-8b" or llm == "gemini-1.5-pro" or llm == "gemini-2.0-flash" or llm == "gemini-2.0-flash-lite-preview-02-05":
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel(
+                model_name=llm,
+                system_instruction=s_instructions
+            )
+            return model
+        else:
+            return f"{ct()} - Invalid LLM selection. Exiting..."
+    else:
+        return f"{ct()} - No API Key found. Exiting..."
+
+# Setup genai for specific analysis
+def genai_config_c(key, llm):
+    s_instructions = """
+    You are the Expert Research Paper Analyst (ERPA), a highly skilled AI specializing in the in-depth comprehension and analysis of academic research papers. Your primary function is to provide concise, accurate, and insightful summaries of research papers, focusing on their objective, methodology, and results. You must also retain the full content of the analyzed paper and your own analysis for subsequent detailed questioning.
+    
+    Core Responsibilities:
+    
+    1. Comprehensive Paper Ingestion: When presented with a research paper (as plain text, or a link to a publicly accessible PDF that I can access and process into text), you will "read" and internally process its entire content. No part of the paper should be overlooked.
+    2. Objective Identification: Clearly and concisely articulate the primary objective(s) or research question(s) that the paper aims to address. This should be derived directly from the paper's introduction, abstract, and stated goals.
+    3. Methodology Breakdown: Provide a clear and detailed overview of the research methodology employed. This includes:
+        Study design (e.g., experimental, correlational, qualitative, quantitative)
+        Participants/Subjects (e.g., sample size, demographics, selection criteria)
+        Data collection instruments/procedures
+        Data analysis techniques (e.g., statistical tests, thematic analysis)
+        Any specific tools, software, or equipment used.
+    4. Results Summarization: Present the key findings and results of the research in a clear, concise, and understandable manner. Avoid jargon where possible, or explain it if necessary. Highlight the most significant outcomes and any statistical significances reported.
+    5. Concise Analysis & Summarization: Synthesize the objective, methodology, and results into a coherent and brief summary that captures the essence of the paper. This should be suitable for someone who needs a quick understanding of the paper's core contribution.
+    6. Memory Retention: You must remember the full text of the research paper you have analyzed, as well as the detailed analysis you have generated (objective, methodology, results, and overall summary). This memory is crucial for subsequent interactions.
+    7. Exact Text Retrieval: When asked to provide an exact quote or specific passage from the original research paper, you must be able to retrieve and present it verbatim.
+    8. Contextual Answering: Be prepared to answer any follow-up questions related to the paper, drawing upon both the original text and your generated analysis. This includes explaining specific concepts, expanding on methodologies, discussing limitations, or elaborating on implications.
+    
+    Interaction Protocol:
+    
+    1. Initial Prompt: The user will provide you with a research paper (either as direct text or a link to a PDF).
+    2. Initial Response: Upon receiving the paper, you will process it and immediately provide the concise analysis and summarization (objective, methodology, results, overall summary).
+    3. Subsequent Questions: After your initial analysis, the user may ask further questions. You will answer these questions accurately, drawing from your retained knowledge of the paper and your analysis.
+    4. Exact Text Request: If the user asks for exact text, respond with "Sure, here's the exact text from the paper:" followed by the verbatim passage.
+    5. Clarity and Brevity: Your responses should always be clear, concise, and to the point. Avoid unnecessary verbosity.
+    
+    Constraints:
+    
+    1. Do not invent information not present in the paper. If a piece of information is not available, state that explicitly.
+    2. If the paper is not in English, state that you can only process papers in English.
+    3. If the paper cannot be accessed (e.g., broken link, paywall), state that you are unable to access the paper.
+    
+    Important Instruction: ALL RESPONSES MUST BEGIN WITH "Answer: "
+    
+    Example Initial Output Format:
+    
+    Answer:
+    
+    Research Paper Analysis: [Paper Title]
+    
+    1. Objective: [Concise statement of the paper's objective(s) / research question(s)]
+    
+    2. Methodology: Design: [Study design], Participants/Subjects: [Details about participants/subjects], Data Collection: [Instruments and procedures], Data Analysis: [Techniques used]
+    
+    3. Results: [Key findings and significant results]
+    
+    4. Overall Summary: [A concise paragraph summarizing the paper's objective, methodology, and results.]
+    
+    Example Follow-up Output Format:
+
+    Answer:
+    
+    Follow-up Analysis: [Paper Title]
+    
+    1. Response: [Concise and direct answer to the provided question, synthesized from the paper's content and your understanding.]
+    
+    2. Supporting Quote: [Exact, verbatim text from the paper that directly supports or provides the information for your response. If multiple sentences or a paragraph are needed, provide them.]
+    
+    3. Explanation of Relevance: [Concise explanation of why the extracted text (from point 2) is relevant and how it directly addresses or elaborates on the user's question, reinforcing your response from point 1.]
+    """
+    if key:
+        if llm == "gemini-1.5-flash" or llm == "gemini-1.5-flash-8b" or llm == "gemini-1.5-pro" or llm == "gemini-2.0-flash" or llm == "gemini-2.0-flash-lite-preview-02-05":
+            genai.configure(api_key=key)
+            model = genai.GenerativeModel(
+                model_name=llm,
+                system_instruction=s_instructions
+            )
+            return model
+        else:
+            return f"{ct()} - Invalid LLM selection. Exiting..."
+    else:
+        return f"{ct()} - No API Key found. Exiting..."
 
 # Define method to extract data from response
 def response_data_extraction(data, model):
@@ -533,6 +703,181 @@ def response_data_extraction_d(data, model):
     #       f"\n - Reference: {ref}.")
     return section_no, section_name, quote, ref
 
+# Define method to extract data from response
+def response_data_extraction_d_2(data, model):
+
+    prompt=f"Research Paper Content: {data}"
+
+    response = model.generate_content(prompt)
+
+    print(f"{ct()} - Response is provided. Analyzing and extracting relevant information...")
+
+    # print(f"{ct()} - Response for paper no. {index} is provided. Analyzing and extracting relevant information...\n")
+
+    # print(f"{ct()} - Response:"
+    #       f"\n {response}")
+
+
+    # line0=[line for line in response.text.split("\n") if line.startswith("- Theoretical Framework: ")]
+    # if line0:
+    #     theoretical_framework = line0[0].split(": ")[1].strip()
+    # else:
+    #     theoretical_framework = "Response error!"
+    #
+    # line1=[line for line in response.text.split("\n") if line.startswith("- The Circular Economy Fundamentals: ")]
+    # if line1:
+    #     ce_fundamentals = line1[0].split(": ")[1].strip()
+    # else:
+    #     ce_fundamentals = "Response error!"
+
+    line1=[line for line in response.text.split("\n") if line.startswith("- 2.1.1: ")]
+    if line1:
+        ce_def = line1[0].split(": ")[1].strip()
+    else:
+        ce_def = "Response error!"
+
+    line1=[line for line in response.text.split("\n") if line.startswith("- 2.1.2: ")]
+    if line1:
+        ce_principles = line1[0].split(": ")[1].strip()
+    else:
+        ce_principles = "Response error!"
+
+    line1=[line for line in response.text.split("\n") if line.startswith("- 2.1.3: ")]
+    if line1:
+        ce_imp_benefits = line1[0].split(": ")[1].strip()
+    else:
+        ce_imp_benefits = "Response error!"
+
+    # line1=[line for line in response.text.split("\n") if line.startswith("- Learning Concepts and E-learning Tools: ")]
+    # if line1:
+    #     l_concpt_tools = line1[0].split(": ")[1].strip()
+    # else:
+    #     l_concpt_tools = "Response error!"
+
+    line1 = [line for line in response.text.split("\n") if line.startswith("- 2.2.1: ")]
+    if line1:
+        l_def = line1[0].split(": ")[1].strip()
+    else:
+        l_def = "Response error!"
+
+    line1 = [line for line in response.text.split("\n") if line.startswith("- 2.2.2: ")]
+    if line1:
+        l_concpt = line1[0].split(": ")[1].strip()
+    else:
+        l_concpt = "Response error!"
+
+    line1 = [line for line in response.text.split("\n") if line.startswith("- 2.2.3: ")]
+    if line1:
+        l_tools_cat = line1[0].split(": ")[1].strip()
+    else:
+        l_tools_cat = "Response error!"
+
+    # line1 = [line for line in response.text.split("\n") if line.startswith("- The Berlin Industrial SMEs Landscape: ")]
+    # if line1:
+    #     bl_sme = line1[0].split(": ")[1].strip()
+    # else:
+    #     bl_sme = "Response error!"
+
+    line1 = [line for line in response.text.split("\n") if line.startswith("- 2.3.1: ")]
+    if line1:
+        bl_char = line1[0].split(": ")[1].strip()
+    else:
+        bl_char = "Response error!"
+
+    line1 = [line for line in response.text.split("\n") if line.startswith("- 2.3.2: ")]
+    if line1:
+        bl_chal = line1[0].split(": ")[1].strip()
+    else:
+        bl_chal = "Response error!"
+
+    line1 = [line for line in response.text.split("\n") if line.startswith("- 2.3.3: ")]
+    if line1:
+        bl_opp = line1[0].split(": ")[1].strip()
+    else:
+        bl_opp = "Response error!"
+
+    line1 = [line for line in response.text.split("\n") if line.startswith("- 2.3.4: ")]
+    if line1:
+        bl_ce_impl = line1[0].split(": ")[1].strip()
+    else:
+        bl_ce_impl = "Response error!"
+
+    line1 = [line for line in response.text.split("\n") if line.startswith("- 3.1: ")]
+    if line1:
+        gap_1 = line1[0].split(": ")[1].strip()
+    else:
+        gap_1 = "Response error!"
+
+    line1 = [line for line in response.text.split("\n") if line.startswith("- 3.2: ")]
+    if line1:
+        gap_2 = line1[0].split(": ")[1].strip()
+    else:
+        gap_2 = "Response error!"
+
+    # line1 = [line for line in response.text.split("\n") if
+    #          line.startswith("- Research Direction and Assisting Tools: ")]
+    # if line1:
+    #     r_dir_tools = line1[0].split(": ")[1].strip()
+    # else:
+    #     r_dir_tools = "N/A"
+
+    line1 = [line for line in response.text.split("\n") if
+             line.startswith("- 4.2.1: ")]
+    if line1:
+        suc_impl = line1[0].split(": ")[1].strip()
+    else:
+        suc_impl = "N/A"
+
+    line1 = [line for line in response.text.split("\n") if
+             line.startswith("- 4.2.2: ")]
+    if line1:
+        s_l_concpt = line1[0].split(": ")[1].strip()
+    else:
+        s_l_concpt = "N/A"
+
+    line1 = [line for line in response.text.split("\n") if
+             line.startswith("- 4.2.3: ")]
+    if line1:
+        impl_bp = line1[0].split(": ")[1].strip()
+    else:
+        impl_bp = "N/A"
+
+    line1 = [line for line in response.text.split("\n") if
+             line.startswith("- 4.2.4: ")]
+    if line1:
+        curriculum = line1[0].split(": ")[1].strip()
+    else:
+        curriculum = "N/A"
+
+    # line1 = [line for line in response.text.split("\n") if
+    #          line.startswith("- Platform Concept Overview: ")]
+    # if line1:
+    #     platform_concpt = line1[0].split(": ")[1].strip()
+    # else:
+    #     platform_concpt = "N/A"
+    #
+    # line1 = [line for line in response.text.split("\n") if
+    #          line.startswith("- Evaluation and Discussion: ")]
+    # if line1:
+    #     eval_dis = line1[0].split(": ")[1].strip()
+    # else:
+    #     eval_dis = "N/A"
+    #
+    # line1 = [line for line in response.text.split("\n") if
+    #          line.startswith("- Limitations and Future Work: ")]
+    # if line1:
+    #     limits = line1[0].split(": ")[1].strip()
+    # else:
+    #     limits = "N/A"
+
+    line1 = [line for line in response.text.split("\n") if line.startswith("- Reference: ")]
+    if line1:
+        reference = line1[0].split(": ")[1].strip()
+    else:
+        reference = "N/A"
+    # return theoretical_framework, ce_fundamentals, ce_def, ce_principles, ce_imp_benefits, l_concpt_tools, l_def, l_concpt, l_tools_cat, bl_sme, bl_char, bl_chal, bl_opp, bl_ce_impl, gap_1, gap_2, r_dir_tools, suc_impl, s_l_concpt, impl_bp, curriculum, platform_concpt, eval_dis, limits, reference
+    return ce_def, ce_principles, ce_imp_benefits, l_def, l_concpt, l_tools_cat, bl_char, bl_chal, bl_opp, bl_ce_impl, gap_1, gap_2, suc_impl, s_l_concpt, impl_bp, curriculum, reference
+
 # Quote extraction
 def quotes_extraction(data, model):
 
@@ -579,6 +924,75 @@ def quotes_extraction(data, model):
         q6 = "N/A"
 
     return q1, q2, q3, q4, q5, q6
+
+def response_c(path, model):
+    data = pdf_text_extraction(path)
+    prompt = f"Research Paper Content: {data}"
+    response = model.generate_content(prompt)
+
+    line = [line for line in response.text.split("\n") if line.startswith("Research Paper Analysis: ")]
+    if line:
+        title = "Research Paper Analysis: " + str(line)
+    else:
+        title = "Research Paper Analysis: N/A"
+
+    line = [line for line in response.text.split("\n") if line.startswith("1. Objective: ")]
+    if line:
+        obj = "1. Objective: " + str(line)
+    else:
+        obj = "1. Objective: N/A"
+
+    line = [line for line in response.text.split("\n") if line.startswith("2. Methodology: ")]
+    if line:
+        mtd = "2. Methodology: " + str(line)
+    else:
+        mtd = "2. Methodology: N/A"
+
+    line = [line for line in response.text.split("\n") if line.startswith("3. Results: ")]
+    if line:
+        rst = "3. Results: " + str(line)
+    else:
+        rst = "3. Results: N/A"
+
+    line = [line for line in response.text.split("\n") if line.startswith("4. Overall Summary: ")]
+    if line:
+        smr = "4. Overall Summary: " + str(line)
+    else:
+        smr = "4. Overall Summary: N/A"
+
+    # line = [line for line in response.text.split("\n") if line.startswith("Follow-up Analysis: ")]
+    # if line:
+    #     ftitle = "Follow-up Analysis: " + str(line)
+    # else:
+    #     ftitle = "Follow-up Analysis: N/A"
+    #
+    # line = [line for line in response.text.split("\n") if line.startswith("1. Response: ")]
+    # if line:
+    #     rps = "1. Response: " + str(line)
+    # else:
+    #     rps = "1. Response: N/A"
+    #
+    # line = [line for line in response.text.split("\n") if line.startswith("2. Supporting Quote: ")]
+    # if line:
+    #     qte = "2. Supporting Quote: " + str(line)
+    # else:
+    #     qte = "2. Supporting Quote: N/A"
+    #
+    # line = [line for line in response.text.split("\n") if line.startswith("3. Explanation of Relevance: ")]
+    # if line:
+    #     expl = "3. Explanation of Relevance: " + str(line)
+    # else:
+    #     expl = "3. Explanation of Relevance: N/A"
+
+    print(title)
+    print(obj)
+    print(mtd)
+    print(rst)
+    print(smr)
+    # print(ftitle)
+    # print(rps)
+    # print(qte)
+    # print(expl)
 
 def process_loop_b(dir, model):
     if not os.path.isdir(dir):
@@ -637,6 +1051,32 @@ def process_loop_d(dir, model):
     df_results = pd.DataFrame(results, columns=["No.", "Title", "Section Number", "Section Name", "Quote", "Reference"])
     return df_results
 
+def process_loop_d_2(dir, model):
+    if not os.path.isdir(dir):
+        print(f"{ct()} - Incorrect file path.")
+        return
+
+    results = []
+    index = 1
+
+    for filename in os.listdir(dir):
+        if filename.endswith(".pdf"):
+            filepath = os.path.join(dir, filename)
+            print(f"{ct()} - Processing document: {filename}")
+            content = pdf_text_extraction(filepath)
+            if "Error:" in content:
+                print(content)
+                continue
+            ce_def, ce_principles, ce_imp_benefits, l_def, l_concpt, l_tools_cat, bl_char, bl_chal, bl_opp, bl_ce_impl, gap_1, gap_2, suc_impl, s_l_concpt, impl_bp, curriculum, reference=response_data_extraction_d_2(content, model)
+
+            results.append((index, filename, ce_def, ce_principles, ce_imp_benefits, l_def, l_concpt, l_tools_cat, bl_char, bl_chal, bl_opp, bl_ce_impl, gap_1, gap_2, suc_impl, s_l_concpt, impl_bp, curriculum, reference))
+            index+=1
+            print(f"{ct()} - Completed analyzing document: {filename}.\n")
+            time.sleep(6)
+    print(f"{ct()} - All PDF files in {dir} have been processed. Exporting to data table...")
+    df_results = pd.DataFrame(results, columns=["No.", "Title", "2.1.1 General Definition", "2.1.2 Key Principles", "2.1.3 Importance and Benefits", "2.2.1 Definition", "2.2.2 Learning Concepts", "2.2.3 E-learning Tools by Key Categories", "2.3.1 Key Characteristics", "2.3.2 Challenges", "2.3.3 Opportunities", "2.3.4 Notable CE Implementations in Businesses", "3.1 CE Implementation amongst SMEs Gaps", "3.2 Effectiveness of the CE Education Gaps", "4.2.1 Successful Implementation Cases", "4.2.2 Suitable Learning Concepts", "4.2.3 Implementation Best Practices", "4.2.4 Courseware and Training Curriculum", "Reference"])
+    return df_results
+
 def ple(dir, model):
     if not os.path.isdir(dir):
         print(f"{ct()} - Incorrect file path.")
@@ -663,7 +1103,8 @@ def ple(dir, model):
     return qer
 
 def excel_export_b(df):
-    output_filename = PARENT_DIR / "Basic_Analysis_Results.xlsx"
+    name_structure = f'Basic_Analysis_Results_{ct_o()}.xlsx'
+    output_filename = PARENT_DIR / name_structure
     with pd.ExcelWriter(output_filename, mode='w') as writer:
         df.to_excel(writer, sheet_name='Processed')
     print(f"{ct()} - Results are exported to: {output_filename}.")
@@ -671,7 +1112,8 @@ def excel_export_b(df):
     return
 
 def excel_export_d(df):
-    output_filename = PARENT_DIR / "Detailed_Analysis_Results.xlsx"
+    name_structure = f'Detailed_Analysis_Results_{ct_o()}.xlsx'
+    output_filename = PARENT_DIR / name_structure
     with pd.ExcelWriter(output_filename, mode='w') as writer:
         df.to_excel(writer, sheet_name='Processed')
     print(f"{ct()} - Results are exported to: {output_filename}.")
@@ -679,7 +1121,8 @@ def excel_export_d(df):
     return
 
 def excel_export_q(df):
-    output_filename = PARENT_DIR / "Quotes.xlsx"
+    name_structure = f'Quotes_{ct_o()}.xlsx'
+    output_filename = PARENT_DIR / name_structure
     with pd.ExcelWriter(output_filename, mode='w') as writer:
         df.to_excel(writer, sheet_name='Processed')
     print(f"{ct()} - Results are exported to: {output_filename}.")
@@ -711,8 +1154,10 @@ def main(path, key, llm):
 def main_d(path, key, llm):
     file_path=path
     if file_path:
-        model_d=genai_config_d(key,llm)
-        df2=process_loop_d(file_path,model_d)
+        # model_d=genai_config_d(key,llm)
+        # df2=process_loop_d(file_path,model_d)
+        model_d_2=genai_config_d_2(key,llm)
+        df2=process_loop_d_2(file_path,model_d_2)
         excel_export_d(df2)
     else:
         return f"{ct()} - File not found. Exiting..."
@@ -726,6 +1171,14 @@ def main_q(path, key, llm):
         excel_export_q(df)
     else:
         return f"{ct()} - File not found. Exiting..."
+
+# Main function to perform deep analysis
+def main_c(path, key, llm):
+    if path:
+        model=genai_config_c(key, llm)
+        response_c(path, model)
+    else:
+        return f'{ct()} - File not found. Exiting...'
 
 if __name__ == "__main__":
     main()

@@ -14,7 +14,9 @@ ASSETS_PATH = FILE_PATH / "assets"
 ICON_PATH = ASSETS_PATH / "icon.png"
 
 def ct():
-    return datetime.datetime.now()
+    now = datetime.datetime.now()
+    formatted_time = now.strftime("%H:%M:%S")
+    return formatted_time
 
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
