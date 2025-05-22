@@ -70,21 +70,21 @@ def choose_dir():
     global directory
     directory = filedialog.askdirectory(title="Select Folder containing research papers.")
     if directory:
-        print(f"{ct()} - All PDF(s) in {directory} to be processed are: ")
+        print(f"{ct()} - All PDF(s) in {directory} to be processed are: \n")
         el_files = [f for f in os.listdir(directory) if f.endswith((".pdf"))]
         index = 1
         for file in el_files:
-            print(f"{index}. ", file)
+            print(f"{index}. \n", file)
             index += 1
     else:
-        print(f"{ct()}No folder selected, please choose a folder containing research papers to begin processing!")
+        print(f"{ct()} - No folder selected, please choose a folder containing research papers to begin processing!\n")
     return directory
 
 # Main function
 def start_analysis_s():
     global API_KEY, llm_selection, directory
     if not API_KEY or not llm_selection or not  directory:
-        print(f"{ct()} - Insufficient data provided (Either no PDF found or missing API key or missing LLM), kindly double check your input!")
+        print(f"{ct()} - Insufficient data provided (Either no PDF found or missing API key or missing LLM), kindly double check your input!\n")
         return
     print(f"{ct()} - Start analyzing PDFs found in: {directory}, LLM: {llm_selection}, API Key: {API_KEY}\n")
     def thread_process():
@@ -92,7 +92,7 @@ def start_analysis_s():
 
     thread=threading.Thread(target=thread_process)
     thread.start()
-    print(f"{ct()} - Basic Analysis in progress, please wait...")
+    print(f"{ct()} - Basic Analysis in progress, please wait...\n")
 
 # Choose specific PDF file
 def file_selection():
@@ -106,10 +106,9 @@ def file_selection():
         )
     )
     if specific_pdf and API_KEY and llm_selection:
-        print(f'{ct()} - "{specific_pdf}" has been forwarded to Gemini for analysis.')
-        # call the function to perform analysis
+        print(f'{ct()} - "{specific_pdf}" has been forwarded to Gemini for analysis.\n')
     else:
-        print(f'{ct()} - Insufficient data provided (Either no PDF found or missing API key or missing LLM), kindly double check your input!')
+        print(f'{ct()} - Insufficient data provided (Either no PDF found or missing API key or missing LLM), kindly double check your input!\n')
         return
     def thread_ps():
         main.main_c(specific_pdf, API_KEY, llm_selection) # function to do specific analysis
@@ -134,13 +133,25 @@ button_1.place(
     height=40.0
 )
 
+def chat():
+    global API_KEY, llm_selection
+    userinput = entry_1.get()
+    if userinput and API_KEY and llm_selection:
+        main.main_chat(API_KEY,llm_selection,userinput)
+        entry_1.delete(0, tkinter.END)
+        pass
+    else:
+        print(f'{ct()} - Either one of the following information is missing, please kindly provide them: message to be sent, API key or LLM selection.\n')
+        return
+
+#Send button
 button_image_2 = PhotoImage(
     file=relative_to_assets("check.png"))
 send_chat = Button(
     image=button_image_2,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("Sending question to Gemini..."),
+    command=chat,
     relief="flat"
 )
 send_chat.place(
@@ -154,7 +165,7 @@ send_chat.place(
 def start_qe():
     global API_KEY, llm_selection, directory
     if not API_KEY or not llm_selection or not  directory:
-        print(f"{ct()} - Insufficient data provided (Either no PDF found or missing API key or missing LLM), kindly double check your input!")
+        print(f"{ct()} - Insufficient data provided (Either no PDF found or missing API key or missing LLM), kindly double check your input!\n")
         return
     print(f"{ct()} - Start extracting quotes for PDFs found in: {directory}, LLM: {llm_selection}, API Key: {API_KEY}\n")
     def thread_process():
@@ -162,7 +173,7 @@ def start_qe():
 
     thread=threading.Thread(target=thread_process)
     thread.start()
-    print(f"{ct()} - Quotes extraction in progress, please wait...")
+    print(f"{ct()} - Quotes extraction in progress, please wait...\n")
 
 button_image_3 = PhotoImage(
     file=relative_to_assets("qe.png"))
@@ -184,7 +195,7 @@ button_3.place(
 def start_analysis_d():
     global API_KEY, llm_selection, directory
     if not API_KEY or not llm_selection or not  directory:
-        print(f"{ct()} - Insufficient data provided (Either no PDF found or missing API key or missing LLM), kindly double check your input!")
+        print(f"{ct()} - Insufficient data provided (Either no PDF found or missing API key or missing LLM), kindly double check your input!\n")
         return
     print(f"{ct()} - Start analyzing PDFs found in: {directory}, LLM: {llm_selection}, API Key: {API_KEY}\n")
     def thread_process():
@@ -192,7 +203,7 @@ def start_analysis_d():
 
     thread=threading.Thread(target=thread_process)
     thread.start()
-    print(f"{ct()} - Basic Analysis in progress, please wait...")
+    print(f"{ct()} - Basic Analysis in progress, please wait...\n")
 
 button_image_4 = PhotoImage(
     file=relative_to_assets("dt.png"))
@@ -214,7 +225,7 @@ button_4.place(
 def start_analysis():
     global API_KEY, llm_selection, directory
     if not API_KEY or not llm_selection or not  directory:
-        print(f"{ct()} - Insufficient data provided (Either no PDF found or missing API key or missing LLM), kindly double check your input!")
+        print(f"{ct()} - Insufficient data provided (Either no PDF found or missing API key or missing LLM), kindly double check your input!\n")
         return
     print(f"{ct()} - Start analyzing PDFs found in: {directory}, LLM: {llm_selection}, API Key: {API_KEY}\n")
     def thread_process():
@@ -222,7 +233,7 @@ def start_analysis():
 
     thread=threading.Thread(target=thread_process)
     thread.start()
-    print(f"{ct()} - Basic Analysis in progress, please wait...")
+    print(f"{ct()} - Basic Analysis in progress, please wait...\n")
 
 button_image_5 = PhotoImage(
     file=relative_to_assets("ba.png"))
@@ -306,6 +317,7 @@ browse.place(
     height=40.0
 )
 
+# User messages
 entry_image_1 = PhotoImage(
     file=relative_to_assets("conv_box.png"))
 entry_bg_1 = canvas.create_image(
@@ -413,13 +425,17 @@ class StdoutRedirector(object):
     def __init__(self, ter_dis, conv_box):
         self.ter_dis = ter_dis
         self.conv_box = conv_box
-        self.ter_dis.tag_config("output", foreground="lightblue")
-        self.conv_box.tag_config("conversation", foreground="lightgreen")
+        self.ter_dis.tag_config("output", foreground="#8cffff")
+        self.conv_box.tag_config("content", foreground="#56ff3c")
+        self.conv_box.tag_config("title", foreground="#ffff78")
+        self.conv_box.tag_config("p_name", foreground="#ff50f3")
+        self.conv_box.tag_config("separator", foreground="#ffcc78")
+        self.conv_box.tag_config("separator_s", foreground="#500068")
 
     def write(self, string):
         match1=re.search(r"Research Paper Analysis: (.*)",string)
         match2=re.search(r"1. Objective: (.*)",string)
-        match3=re.search(r"2. Methodology: (.*)",string)
+        match3=re.search(r"2. Methodology:(.*)",string)
         match4=re.search(r"3. Results: (.*)",string)
         match5=re.search(r"4. Overall Summary: (.*)",string)
         match6=re.search(r"Follow-up Analysis: (.*)",string)
@@ -428,47 +444,69 @@ class StdoutRedirector(object):
         match9=re.search(r"3. Explanation of Relevance: (.*)",string)
         if match1:
             aws=match1.group(1).strip()
-            self.conv_box.insert(tkinter.END, f'{aws}\n', "conversation")
+            self.conv_box.insert(tkinter.END, "="*91, "separator")
+            self.conv_box.insert(tkinter.END, "\n\nResearch Paper Analysis: \n", "title")
+            self.conv_box.insert(tkinter.END, f'{aws}\n', "p_name")
+            self.conv_box.insert(tkinter.END, f'\n', "content")
             self.conv_box.see(tkinter.END)
             self.conv_box.update_idletasks()
         elif match2:
             aws=match2.group(1).strip()
-            self.conv_box.insert(tkinter.END, f'{aws}\n', "conversation")
+            self.conv_box.insert(tkinter.END, "1. Objective: \n", "title")
+            self.conv_box.insert(tkinter.END, f'{aws}\n', "content")
+            self.conv_box.insert(tkinter.END, f'\n', "content")
             self.conv_box.see(tkinter.END)
             self.conv_box.update_idletasks()
         elif match3:
             aws=match3.group(1).strip()
-            self.conv_box.insert(tkinter.END, f'{aws}\n', "conversation")
+            aws_lines=aws.split('.')
+            self.conv_box.insert(tkinter.END, "2. Methodology: \n", "title")
+            for line in aws_lines:
+                self.conv_box.insert(tkinter.END, f'{line}\n', "content")
+            self.conv_box.insert(tkinter.END, f'\n', "content")
             self.conv_box.see(tkinter.END)
             self.conv_box.update_idletasks()
         elif match4:
             aws=match4.group(1).strip()
-            self.conv_box.insert(tkinter.END, f'{aws}\n', "conversation")
+            self.conv_box.insert(tkinter.END, "3. Results: \n", "title")
+            self.conv_box.insert(tkinter.END, f'{aws}\n', "content")
+            self.conv_box.insert(tkinter.END, f'\n', "content")
             self.conv_box.see(tkinter.END)
             self.conv_box.update_idletasks()
         elif match5:
             aws=match5.group(1).strip()
-            self.conv_box.insert(tkinter.END, f'{aws}\n', "conversation")
+            self.conv_box.insert(tkinter.END, "4. Overall Summary: \n", "title")
+            self.conv_box.insert(tkinter.END, f'{aws}\n', "content")
+            self.conv_box.insert(tkinter.END, f'\n', "content")
             self.conv_box.see(tkinter.END)
             self.conv_box.update_idletasks()
         elif match6:
             aws=match6.group(1).strip()
-            self.conv_box.insert(tkinter.END, f'{aws}\n', "conversation")
+            self.conv_box.insert(tkinter.END, "-"*91, "separator_s")
+            self.conv_box.insert(tkinter.END, "Follow-up Analysis: \n", "title")
+            self.conv_box.insert(tkinter.END, f'{aws}\n', "p_name")
+            self.conv_box.insert(tkinter.END, f'\n', "content")
             self.conv_box.see(tkinter.END)
             self.conv_box.update_idletasks()
         elif match7:
             aws=match7.group(1).strip()
-            self.conv_box.insert(tkinter.END, f'{aws}\n', "conversation")
+            self.conv_box.insert(tkinter.END, "1. Response: \n", "title")
+            self.conv_box.insert(tkinter.END, f'{aws}\n', "content")
+            self.conv_box.insert(tkinter.END, f'\n', "output_1")
             self.conv_box.see(tkinter.END)
             self.conv_box.update_idletasks()
         elif match8:
             aws=match8.group(1).strip()
-            self.conv_box.insert(tkinter.END, f'{aws}\n', "conversation")
+            self.conv_box.insert(tkinter.END, "2. Supporting Quote: \n", "title")
+            self.conv_box.insert(tkinter.END, f'{aws}\n', "content")
+            self.conv_box.insert(tkinter.END, f'\n', "content")
             self.conv_box.see(tkinter.END)
             self.conv_box.update_idletasks()
         elif match9:
             aws=match9.group(1).strip()
-            self.conv_box.insert(tkinter.END, f'{aws}\n', "conversation")
+            self.conv_box.insert(tkinter.END, "3. Explanation of Relevance: \n", "title")
+            self.conv_box.insert(tkinter.END, f'{aws}\n', "content")
+            self.conv_box.insert(tkinter.END, f'\n', "content")
             self.conv_box.see(tkinter.END)
             self.conv_box.update_idletasks()
         else:

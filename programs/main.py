@@ -15,6 +15,9 @@ PARENT_DIR = Path(__file__).parent
 RESULT_DIR = PARENT_DIR / "results"
 os.makedirs(RESULT_DIR, exist_ok=True)
 
+# Conversation history
+conv_hist = []
+
 # Defining current timestamp
 def ct():
     now = datetime.datetime.now()
@@ -462,33 +465,25 @@ def genai_config_c(key, llm):
     1. Do not invent information not present in the paper. If a piece of information is not available, state that explicitly.
     2. If the paper is not in English, state that you can only process papers in English.
     3. If the paper cannot be accessed (e.g., broken link, paywall), state that you are unable to access the paper.
+    4. Respect and follow exactly the Example Output Format and do not add any other special characters like "*" into the output.
     
     Important Instruction: ALL RESPONSES MUST BEGIN WITH "Answer: "
     
     Example Initial Output Format:
     
     Answer:
-    
     Research Paper Analysis: [Paper Title]
-    
     1. Objective: [Concise statement of the paper's objective(s) / research question(s)]
-    
     2. Methodology: Design: [Study design], Participants/Subjects: [Details about participants/subjects], Data Collection: [Instruments and procedures], Data Analysis: [Techniques used]
-    
     3. Results: [Key findings and significant results]
-    
     4. Overall Summary: [A concise paragraph summarizing the paper's objective, methodology, and results.]
     
     Example Follow-up Output Format:
 
     Answer:
-    
     Follow-up Analysis: [Paper Title]
-    
     1. Response: [Concise and direct answer to the provided question, synthesized from the paper's content and your understanding.]
-    
     2. Supporting Quote: [Exact, verbatim text from the paper that directly supports or provides the information for your response. If multiple sentences or a paragraph are needed, provide them.]
-    
     3. Explanation of Relevance: [Concise explanation of why the extracted text (from point 2) is relevant and how it directly addresses or elaborates on the user's question, reinforcing your response from point 1.]
     """
     if key:
@@ -511,7 +506,7 @@ def response_data_extraction(data, model):
 
     response = model.generate_content(prompt)
 
-    print(f"{ct()} - Response is provided. Analyzing and extracting relevant information...")
+    print(f"{ct()} - Response is provided. Analyzing and extracting relevant information...\n")
 
     # print(f"{ct()} - Response for paper no. {index} is provided. Analyzing and extracting relevant information...\n")
 
@@ -662,7 +657,7 @@ def response_data_extraction_d(data, model):
     # print(prompt)
     response = model.generate_content(prompt)
 
-    print(f"{ct()} - Response is provided. Analyzing and extracting relevant information...")
+    print(f"{ct()} - Response is provided. Analyzing and extracting relevant information...\n")
 
     # - Reference:
     line0=[line for line in response.text.split("\n") if line.startswith("- Section number: ")]
@@ -710,7 +705,7 @@ def response_data_extraction_d_2(data, model):
 
     response = model.generate_content(prompt)
 
-    print(f"{ct()} - Response is provided. Analyzing and extracting relevant information...")
+    print(f"{ct()} - Response is provided. Analyzing and extracting relevant information...\n")
 
     # print(f"{ct()} - Response for paper no. {index} is provided. Analyzing and extracting relevant information...\n")
 
@@ -885,7 +880,7 @@ def quotes_extraction(data, model):
 
     response = model.generate_content(prompt)
 
-    print(f"{ct()} - Response is provided. Analyzing and extracting relevant information...")
+    print(f"{ct()} - Response is provided. Analyzing and extracting relevant information...\n")
 
     line0=[line for line in response.text.split("\n") if line.startswith("- Quote 1: ")]
     if line0:
@@ -925,78 +920,174 @@ def quotes_extraction(data, model):
 
     return q1, q2, q3, q4, q5, q6
 
-def response_c(path, model):
+def response_c(path, model, conv_hist):
+    s_instructions = """
+        You are the Expert Research Paper Analyst (ERPA), a highly skilled AI specializing in the in-depth comprehension and analysis of academic research papers. Your primary function is to provide concise, accurate, and insightful summaries of research papers, focusing on their objective, methodology, and results. You must also retain the full content of the analyzed paper and your own analysis for subsequent detailed questioning.
+
+        Core Responsibilities:
+
+        1. Comprehensive Paper Ingestion: When presented with a research paper (as plain text, or a link to a publicly accessible PDF that I can access and process into text), you will "read" and internally process its entire content. No part of the paper should be overlooked.
+        2. Objective Identification: Clearly and concisely articulate the primary objective(s) or research question(s) that the paper aims to address. This should be derived directly from the paper's introduction, abstract, and stated goals.
+        3. Methodology Breakdown: Provide a clear and detailed overview of the research methodology employed. This includes:
+            Study design (e.g., experimental, correlational, qualitative, quantitative)
+            Participants/Subjects (e.g., sample size, demographics, selection criteria)
+            Data collection instruments/procedures
+            Data analysis techniques (e.g., statistical tests, thematic analysis)
+            Any specific tools, software, or equipment used.
+        4. Results Summarization: Present the key findings and results of the research in a clear, concise, and understandable manner. Avoid jargon where possible, or explain it if necessary. Highlight the most significant outcomes and any statistical significances reported.
+        5. Concise Analysis & Summarization: Synthesize the objective, methodology, and results into a coherent and brief summary that captures the essence of the paper. This should be suitable for someone who needs a quick understanding of the paper's core contribution.
+        6. Memory Retention: You must remember the full text of the research paper you have analyzed, as well as the detailed analysis you have generated (objective, methodology, results, and overall summary). This memory is crucial for subsequent interactions.
+        7. Exact Text Retrieval: When asked to provide an exact quote or specific passage from the original research paper, you must be able to retrieve and present it verbatim.
+        8. Contextual Answering: Be prepared to answer any follow-up questions related to the paper, drawing upon both the original text and your generated analysis. This includes explaining specific concepts, expanding on methodologies, discussing limitations, or elaborating on implications.
+        
+        Interaction Protocol:
+
+        1. Initial Prompt: The user will provide you with a research paper (either as direct text or a link to a PDF).
+        2. Initial Response: Upon receiving the paper, you will process it and immediately provide the concise analysis and summarization (objective, methodology, results, overall summary).
+        3. Subsequent Questions: After your initial analysis, the user may ask further questions. You will answer these questions accurately, drawing from your retained knowledge of the paper and your analysis.
+        4. Exact Text Request: If the user asks for exact text, respond with "Sure, here's the exact text from the paper:" followed by the verbatim passage.
+        5. Clarity and Brevity: Your responses should always be clear, concise, and to the point. Avoid unnecessary verbosity.
+
+        Constraints:
+
+        1. Do not invent information not present in the paper. If a piece of information is not available, state that explicitly.
+        2. If the paper is not in English, state that you can only process papers in English.
+        3. If the paper cannot be accessed (e.g., broken link, paywall), state that you are unable to access the paper.
+        4. Respect and follow exactly the Example Output Format and do not add any other special characters like "*" into the output.
+        
+        Important Instruction: ALL RESPONSES MUST BEGIN WITH "Answer: "
+
+        Example Initial Output Format:
+
+        Answer: 
+        Research Paper Analysis: [Paper Title]
+        1. Objective: [Concise statement of the paper's objective(s) / research question(s)]
+        2. Methodology: Design: [Study design], Participants/Subjects: [Details about participants/subjects], Data Collection: [Instruments and procedures], Data Analysis: [Techniques used]
+        3. Results: [Key findings and significant results]
+        4. Overall Summary: [A concise paragraph summarizing the paper's objective, methodology, and results.]
+
+        Example Follow-up Output Format:
+
+        Answer:
+        Follow-up Analysis: [Paper Title]
+        1. Response: [Concise and direct answer to the provided question, synthesized from the paper's content and your understanding.]
+        2. Supporting Quote: [Exact, verbatim text from the paper that directly supports or provides the information for your response. If multiple sentences or a paragraph are needed, provide them.]
+        3. Explanation of Relevance: [Concise explanation of why the extracted text (from point 2) is relevant and how it directly addresses or elaborates on the user's question, reinforcing your response from point 1.]
+        """
     data = pdf_text_extraction(path)
     prompt = f"Research Paper Content: {data}"
+    user_message = {
+        "role": "user",
+        "parts": [
+            {"text": f'{s_instructions}\n\n{prompt}'}
+        ]
+    }
+    # conv_hist.append({"role": "user", "content": f'{s_instructions}\n\n{prompt}'})
+    conv_hist.append(user_message)
     response = model.generate_content(prompt)
+    model_response = {
+        "role": "model",
+        "parts": [
+            {"text": response.text}
+        ]
+    }
+    # conv_hist.append({"role": "model", "content": f'{response}'})
+    conv_hist.append(model_response)
+    # print(response)
 
     line = [line for line in response.text.split("\n") if line.startswith("Research Paper Analysis: ")]
     if line:
-        title = "Research Paper Analysis: " + str(line)
+        # print(line)
+        title = ''.join(line)
     else:
         title = "Research Paper Analysis: N/A"
 
     line = [line for line in response.text.split("\n") if line.startswith("1. Objective: ")]
     if line:
-        obj = "1. Objective: " + str(line)
+        # print(line)
+        obj = ''.join(line)
     else:
         obj = "1. Objective: N/A"
 
     line = [line for line in response.text.split("\n") if line.startswith("2. Methodology: ")]
     if line:
-        mtd = "2. Methodology: " + str(line)
+        # print(line)
+        mtd = ''.join(line)
     else:
         mtd = "2. Methodology: N/A"
 
     line = [line for line in response.text.split("\n") if line.startswith("3. Results: ")]
     if line:
-        rst = "3. Results: " + str(line)
+        # print(line)
+        rst = ''.join(line)
     else:
         rst = "3. Results: N/A"
 
     line = [line for line in response.text.split("\n") if line.startswith("4. Overall Summary: ")]
     if line:
-        smr = "4. Overall Summary: " + str(line)
+        # print(line)
+        smr = ''.join(line)
     else:
         smr = "4. Overall Summary: N/A"
-
-    # line = [line for line in response.text.split("\n") if line.startswith("Follow-up Analysis: ")]
-    # if line:
-    #     ftitle = "Follow-up Analysis: " + str(line)
-    # else:
-    #     ftitle = "Follow-up Analysis: N/A"
-    #
-    # line = [line for line in response.text.split("\n") if line.startswith("1. Response: ")]
-    # if line:
-    #     rps = "1. Response: " + str(line)
-    # else:
-    #     rps = "1. Response: N/A"
-    #
-    # line = [line for line in response.text.split("\n") if line.startswith("2. Supporting Quote: ")]
-    # if line:
-    #     qte = "2. Supporting Quote: " + str(line)
-    # else:
-    #     qte = "2. Supporting Quote: N/A"
-    #
-    # line = [line for line in response.text.split("\n") if line.startswith("3. Explanation of Relevance: ")]
-    # if line:
-    #     expl = "3. Explanation of Relevance: " + str(line)
-    # else:
-    #     expl = "3. Explanation of Relevance: N/A"
-
     print(title)
     print(obj)
     print(mtd)
     print(rst)
     print(smr)
-    # print(ftitle)
-    # print(rps)
-    # print(qte)
-    # print(expl)
+    return conv_hist
+
+# Chat function
+def chat_result(model, input, conv_hist):
+    user_message = {
+        "role": "user",
+        "parts": [
+            {"text": input}
+        ]
+    }
+    conv_hist.append(user_message)
+    # conv_hist.append({"role": "user", "content": f"{input}"})
+    response = model.generate_content(conv_hist)
+    model_response = {
+        "role": "model",
+        "parts": [
+            {"text": response.text}
+        ]
+    }
+    # conv_hist.append({"role": "model", "content": f'{response}'})
+    conv_hist.append(model_response)
+    # print(response.text)
+    line = [line for line in response.text.split("\n") if line.startswith("Follow-up Analysis: ")]
+    if line:
+        ftitle = ''.join(line)
+    else:
+        ftitle = "Follow-up Analysis: N/A"
+
+    line = [line for line in response.text.split("\n") if line.startswith("1. Response: ")]
+    if line:
+        rps = ''.join(line)
+    else:
+        rps = "1. Response: N/A"
+
+    line = [line for line in response.text.split("\n") if line.startswith("2. Supporting Quote: ")]
+    if line:
+        qte = ''.join(line)
+    else:
+        qte = "2. Supporting Quote: N/A"
+
+    line = [line for line in response.text.split("\n") if line.startswith("3. Explanation of Relevance: ")]
+    if line:
+        expl = ''.join(line)
+    else:
+        expl = "3. Explanation of Relevance: N/A"
+    print(ftitle)
+    print(rps)
+    print(qte)
+    print(expl)
+    return conv_hist
 
 def process_loop_b(dir, model):
     if not os.path.isdir(dir):
-        print(f"{ct()} - Incorrect file path.")
+        print(f"{ct()} - Incorrect file path.\n")
         return
 
     results = []
@@ -1005,7 +1096,7 @@ def process_loop_b(dir, model):
     for filename in os.listdir(dir):
         if filename.endswith(".pdf"):
             filepath = os.path.join(dir, filename)
-            print(f"{ct()} - Processing document: {filename}")
+            print(f"{ct()} - Processing document: {filename}\n")
             content = pdf_text_extraction(filepath)
             if "Error:" in content:
                 print(content)
@@ -1021,13 +1112,13 @@ def process_loop_b(dir, model):
             index+=1
             print(f"{ct()} - Completed analyzing document: {filename}.\n")
             time.sleep(6)
-    print(f"{ct()} - All PDF files in {dir} have been processed. Exporting to data table...")
+    print(f"{ct()} - All PDF files in {dir} have been processed. Exporting to data table...\n")
     df_results = pd.DataFrame(results, columns=["No.", "Title", "Relevance", "Relevance Level", "Key Areas of Interest", "Research Question", "Research Goal", "Research Category", "Research Type", "Summary", "Methodologies Used", "Research Purpose", "Discussions Addressed", "Reliability Level", "Quote 1 - Key Area of Interest", "Quote 2 - Research Question", "Quote 3 - Research Goal", "Quote 4 - Methodology", "Reference"])
     return df_results
 
 def process_loop_d(dir, model):
     if not os.path.isdir(dir):
-        print(f"{ct()} - Incorrect file path.")
+        print(f"{ct()} - Incorrect file path.\n")
         return
 
     results = []
@@ -1036,7 +1127,7 @@ def process_loop_d(dir, model):
     for filename in os.listdir(dir):
         if filename.endswith(".pdf"):
             filepath = os.path.join(dir, filename)
-            print(f"{ct()} - Processing document: {filename}")
+            print(f"{ct()} - Processing document: {filename}\n")
             content = pdf_text_extraction(filepath)
             if "Error:" in content:
                 print(content)
@@ -1047,13 +1138,13 @@ def process_loop_d(dir, model):
             index+=1
             print(f"{ct()} - Completed analyzing document: {filename}.\n")
             time.sleep(6)
-    print(f"{ct()} - All PDF files in {dir} have been processed. Exporting to data table...")
+    print(f"{ct()} - All PDF files in {dir} have been processed. Exporting to data table...\n")
     df_results = pd.DataFrame(results, columns=["No.", "Title", "Section Number", "Section Name", "Quote", "Reference"])
     return df_results
 
 def process_loop_d_2(dir, model):
     if not os.path.isdir(dir):
-        print(f"{ct()} - Incorrect file path.")
+        print(f"{ct()} - Incorrect file path.\n")
         return
 
     results = []
@@ -1062,7 +1153,7 @@ def process_loop_d_2(dir, model):
     for filename in os.listdir(dir):
         if filename.endswith(".pdf"):
             filepath = os.path.join(dir, filename)
-            print(f"{ct()} - Processing document: {filename}")
+            print(f"{ct()} - Processing document: {filename}\n")
             content = pdf_text_extraction(filepath)
             if "Error:" in content:
                 print(content)
@@ -1073,13 +1164,13 @@ def process_loop_d_2(dir, model):
             index+=1
             print(f"{ct()} - Completed analyzing document: {filename}.\n")
             time.sleep(6)
-    print(f"{ct()} - All PDF files in {dir} have been processed. Exporting to data table...")
+    print(f"{ct()} - All PDF files in {dir} have been processed. Exporting to data table...\n")
     df_results = pd.DataFrame(results, columns=["No.", "Title", "2.1.1 General Definition", "2.1.2 Key Principles", "2.1.3 Importance and Benefits", "2.2.1 Definition", "2.2.2 Learning Concepts", "2.2.3 E-learning Tools by Key Categories", "2.3.1 Key Characteristics", "2.3.2 Challenges", "2.3.3 Opportunities", "2.3.4 Notable CE Implementations in Businesses", "3.1 CE Implementation amongst SMEs Gaps", "3.2 Effectiveness of the CE Education Gaps", "4.2.1 Successful Implementation Cases", "4.2.2 Suitable Learning Concepts", "4.2.3 Implementation Best Practices", "4.2.4 Courseware and Training Curriculum", "Reference"])
     return df_results
 
 def ple(dir, model):
     if not os.path.isdir(dir):
-        print(f"{ct()} - Incorrect file path.")
+        print(f"{ct()} - Incorrect file path.\n")
         return
 
     qe = []
@@ -1087,7 +1178,7 @@ def ple(dir, model):
     for filename in os.listdir(dir):
         if filename.endswith(".pdf"):
             filepath = os.path.join(dir, filename)
-            print(f"{ct()} - Processing document: {filename}")
+            print(f"{ct()} - Processing document: {filename}\n")
             content = pdf_text_extraction(filepath)
             if "Error:" in content:
                 print(content)
@@ -1098,7 +1189,7 @@ def ple(dir, model):
             index+=1
             print(f"{ct()} - Completed extracting critical quotes from document: {filename}.\n")
             time.sleep(6)
-    print(f"{ct()} - All PDF files in {dir} have been processed. Exporting to data table...")
+    print(f"{ct()} - All PDF files in {dir} have been processed. Exporting to data table...\n")
     qer = pd.DataFrame(qe, columns=["No.", "Title", "Quote 1", "Quote 2", "Quote 3", "Quote 4", "Quote 5", "Research Question"])
     return qer
 
@@ -1107,7 +1198,7 @@ def excel_export_b(df):
     output_filename = PARENT_DIR / name_structure
     with pd.ExcelWriter(output_filename, mode='w') as writer:
         df.to_excel(writer, sheet_name='Processed')
-    print(f"{ct()} - Results are exported to: {output_filename}.")
+    print(f"{ct()} - Results are exported to: {output_filename}.\n")
     browser_display(df)
     return
 
@@ -1116,7 +1207,7 @@ def excel_export_d(df):
     output_filename = PARENT_DIR / name_structure
     with pd.ExcelWriter(output_filename, mode='w') as writer:
         df.to_excel(writer, sheet_name='Processed')
-    print(f"{ct()} - Results are exported to: {output_filename}.")
+    print(f"{ct()} - Results are exported to: {output_filename}.\n")
     browser_display(df)
     return
 
@@ -1125,12 +1216,12 @@ def excel_export_q(df):
     output_filename = PARENT_DIR / name_structure
     with pd.ExcelWriter(output_filename, mode='w') as writer:
         df.to_excel(writer, sheet_name='Processed')
-    print(f"{ct()} - Results are exported to: {output_filename}.")
+    print(f"{ct()} - Results are exported to: {output_filename}.\n")
     browser_display(df)
     return
 
 def browser_display(df):
-    print(f"{ct()} - Displaying results in the default web browser...")
+    print(f"{ct()} - Displaying results in the default web browser...\n")
     tabledisplay=df.to_html(index=False)
     output_path = PARENT_DIR / "Results_display.html"
     with open(output_path, "w", encoding="utf-8") as f:
@@ -1138,7 +1229,7 @@ def browser_display(df):
     try:
         webbrowser.open(output_path)
     except Exception as e:
-        print(f"{ct()} - Error displaying results in the default web browser: {e}.")
+        print(f"{ct()} - Error displaying results in the default web browser: {e}.\n")
 
 # Main function
 def main(path, key, llm):
@@ -1148,7 +1239,7 @@ def main(path, key, llm):
         df1=process_loop_b(file_path,model)
         excel_export_b(df1)
     else:
-        return f"{ct()} - File not found. Exiting..."
+        return f"{ct()} - File not found. Exiting...\n"
 
 # Main function
 def main_d(path, key, llm):
@@ -1160,7 +1251,7 @@ def main_d(path, key, llm):
         df2=process_loop_d_2(file_path,model_d_2)
         excel_export_d(df2)
     else:
-        return f"{ct()} - File not found. Exiting..."
+        return f"{ct()} - File not found. Exiting...\n"
 
 # Quote Extraction function
 def main_q(path, key, llm):
@@ -1170,15 +1261,26 @@ def main_q(path, key, llm):
         df=ple(file_path,model)
         excel_export_q(df)
     else:
-        return f"{ct()} - File not found. Exiting..."
+        return f"{ct()} - File not found. Exiting...\n"
 
 # Main function to perform deep analysis
 def main_c(path, key, llm):
+    global conv_hist
+    conv_hist = []
     if path:
         model=genai_config_c(key, llm)
-        response_c(path, model)
+        conv_hist = response_c(path, model, conv_hist)
     else:
-        return f'{ct()} - File not found. Exiting...'
+        return f'{ct()} - File not found. Exiting...\n'
+
+#Chat function
+def main_chat(key, llm, input):
+    global conv_hist
+    if input and conv_hist:
+        model=genai_config_c(key, llm)
+        conv_hist = chat_result(model, input, conv_hist)
+    else:
+        return f'{ct()} - No question has been raised, or no conversation history is available...\n'
 
 if __name__ == "__main__":
     main()
