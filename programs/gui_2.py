@@ -139,6 +139,7 @@ def chat():
     if userinput and API_KEY and llm_selection:
         main.main_chat(API_KEY,llm_selection,userinput)
         entry_1.delete(0, tkinter.END)
+        print(f'{ct()} - User question: "{userinput}"')
         pass
     else:
         print(f'{ct()} - Either one of the following information is missing, please kindly provide them: message to be sent, API key or LLM selection.\n')
@@ -337,6 +338,7 @@ entry_1.place(
     width=670.0,
     height=28.0
 )
+entry_1.bind("<Return>", lambda event: chat())
 
 entry_image_2 = PhotoImage(
     file=relative_to_assets("api_input.png"))
@@ -431,6 +433,7 @@ class StdoutRedirector(object):
         self.conv_box.tag_config("p_name", foreground="#ff50f3")
         self.conv_box.tag_config("separator", foreground="#ffcc78")
         self.conv_box.tag_config("separator_s", foreground="#500068")
+        self.ter_dis.tag_config("user", foreground="#56ff3c")
 
     def write(self, string):
         match1=re.search(r"Research Paper Analysis: (.*)",string)
@@ -442,6 +445,7 @@ class StdoutRedirector(object):
         match7=re.search(r"1. Response: (.*)",string)
         match8=re.search(r"2. Supporting Quote: (.*)",string)
         match9=re.search(r"3. Explanation of Relevance: (.*)",string)
+        match10=re.search(r".*?User question:\..*",string)
         if match1:
             aws=match1.group(1).strip()
             self.conv_box.insert(tkinter.END, "="*91, "separator")
@@ -483,7 +487,7 @@ class StdoutRedirector(object):
         elif match6:
             aws=match6.group(1).strip()
             self.conv_box.insert(tkinter.END, "-"*91, "separator_s")
-            self.conv_box.insert(tkinter.END, "Follow-up Analysis: \n", "title")
+            self.conv_box.insert(tkinter.END, "\n\nFollow-up Analysis: \n", "title")
             self.conv_box.insert(tkinter.END, f'{aws}\n', "p_name")
             self.conv_box.insert(tkinter.END, f'\n', "content")
             self.conv_box.see(tkinter.END)
@@ -509,6 +513,13 @@ class StdoutRedirector(object):
             self.conv_box.insert(tkinter.END, f'\n', "content")
             self.conv_box.see(tkinter.END)
             self.conv_box.update_idletasks()
+        elif match10:
+            aws=match10.group(1)
+            self.ter_dis.insert(tkinter.END, f'User Question: \n', "user")
+            self.ter_dis.insert(tkinter.END, f'{aws}\n', "user")
+            self.ter_dis.insert(tkinter.END, f'\n', "output")
+            self.ter_dis.see(tkinter.END)
+            self.ter_dis.update_idletasks()
         else:
             self.ter_dis.insert(tkinter.END, string, "output")
             self.ter_dis.see(tkinter.END)

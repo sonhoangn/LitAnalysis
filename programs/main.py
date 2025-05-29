@@ -1,8 +1,6 @@
 import datetime
-import json
 import os
 import PyPDF2
-import requests
 import time
 import webbrowser
 from pathlib import Path
@@ -24,6 +22,7 @@ def ct():
     formatted_time = now.strftime("%H:%M:%S")
     return formatted_time
 
+# Timestamp for filename with underscores as separators instead of colons
 def ct_o():
     now = datetime.datetime.now()
     formatted_time = now.strftime("%H_%M_%S")
@@ -451,6 +450,7 @@ def genai_config_c(key, llm):
     6. Memory Retention: You must remember the full text of the research paper you have analyzed, as well as the detailed analysis you have generated (objective, methodology, results, and overall summary). This memory is crucial for subsequent interactions.
     7. Exact Text Retrieval: When asked to provide an exact quote or specific passage from the original research paper, you must be able to retrieve and present it verbatim.
     8. Contextual Answering: Be prepared to answer any follow-up questions related to the paper, drawing upon both the original text and your generated analysis. This includes explaining specific concepts, expanding on methodologies, discussing limitations, or elaborating on implications.
+    9. Comprehensible Information: All returned analysis, summarization, explanation and clarification have to be easy to comprehend in such a way that any person with limited knowledge in the subject discussed by the research could understand. The vocabulary and expressions used must be straightforward and easy to understand.
     
     Interaction Protocol:
     
