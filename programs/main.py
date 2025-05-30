@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import PyPDF2
 import time
@@ -1231,6 +1232,13 @@ def browser_display(df):
     except Exception as e:
         print(f"{ct()} - Error displaying results in the default web browser: {e}.\n")
 
+def export_json(conv_hist):
+    file_name = f"conversation_history_{ct_o()}.json"
+    output_json = PARENT_DIR / "results" / file_name
+    with open(output_json, 'w') as f:
+        json.dump(conv_hist, f, indent=4)
+    print(f"Conversation history saved to: {output_json}")
+
 # Main function
 def main(path, key, llm):
     file_path=path
@@ -1266,6 +1274,8 @@ def main_q(path, key, llm):
 # Main function to perform deep analysis
 def main_c(path, key, llm):
     global conv_hist
+    if conv_hist:
+        export_json(conv_hist)
     conv_hist = []
     if path:
         model=genai_config_c(key, llm)
