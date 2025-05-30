@@ -64,12 +64,16 @@ except FileNotFoundError:
     print(f"{ct()} - Error: Icon file not found at {ICON_PATH}\n")
 except Exception as e:
     print(f"{ct()} - Error loading icon: {e}\n")
-
+last_opened_directory = "/"
 # Choose directory
 def choose_dir():
-    global directory
-    directory = filedialog.askdirectory(title="Select Folder containing research papers.")
+    global directory, last_opened_directory
+    directory = filedialog.askdirectory(
+        title="Select Folder containing research papers.",
+        initialdir=last_opened_directory
+    )
     if directory:
+        last_opened_directory=directory
         print(f"{ct()} - All PDF(s) in {directory} to be processed are: \n")
         el_files = [f for f in os.listdir(directory) if f.endswith((".pdf"))]
         index = 1
@@ -96,16 +100,17 @@ def start_analysis_s():
 
 # Choose specific PDF file
 def file_selection():
-    global API_KEY, llm_selection, specific_pdf
+    global API_KEY, llm_selection, specific_pdf, last_opened_directory
     specific_pdf = filedialog.askopenfilename(
         title="Select the target research paper",
-        initialdir="/",
+        initialdir=last_opened_directory,
         filetypes=(
             ("PDF files", "*.pdf"),
             ("All files", "*.*")
         )
     )
     if specific_pdf and API_KEY and llm_selection:
+        last_opened_directory=os.path.dirname(specific_pdf)
         print(f'{ct()} - "{specific_pdf}" has been forwarded to Gemini for analysis.\n')
     else:
         print(f'{ct()} - Insufficient data provided (Either no PDF found or missing API key or missing LLM), kindly double check your input!\n')
