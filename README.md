@@ -23,6 +23,11 @@ Latest update added a new feature allows users to perform an in-depth analysis o
   cd programs
   python gui_2.py
   ```
+## [Disclaimer](#disclaimer)
+  - **"Gemini is not an all-knowing entity!"** - The results provided by Google Gemini may **not always contain correct** information.
+  - **"Skepticism is crucial!"** - **Always** doublecheck the analysis returned by Google Gemini by manually comparing the given claims, quotes and statements against the actual information found in the target document.
+  - **"Don't be a lazy-phoque""** - **Do not**, and I can't stress this hard enough, blindly copy the answer from Google Gemini and directly paste them into your own works! Instead try to use them as supporting data to reach your own conclusion.
+  - ![A lazy phoque](programs/assets/lazyphoque.jpg)
 ## [Contact](#contact)
   - Nguyen Son Hoang - Development and Design - sonhoangn@yahoo.com
   - Le Thi Dieu Ly - Testing and providing feedback - dieulylt@gmail.com
