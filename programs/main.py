@@ -1196,7 +1196,7 @@ def ple(dir, model):
 
 def excel_export_b(df):
     name_structure = f'Basic_Analysis_Results_{ct_o()}.xlsx'
-    output_filename = PARENT_DIR / name_structure
+    output_filename = PARENT_DIR / "results" / name_structure
     with pd.ExcelWriter(output_filename, mode='w') as writer:
         df.to_excel(writer, sheet_name='Processed')
     print(f"{ct()} - Results are exported to: {output_filename}.\n")
@@ -1205,7 +1205,7 @@ def excel_export_b(df):
 
 def excel_export_d(df):
     name_structure = f'Detailed_Analysis_Results_{ct_o()}.xlsx'
-    output_filename = PARENT_DIR / name_structure
+    output_filename = PARENT_DIR / "results" / name_structure
     with pd.ExcelWriter(output_filename, mode='w') as writer:
         df.to_excel(writer, sheet_name='Processed')
     print(f"{ct()} - Results are exported to: {output_filename}.\n")
@@ -1214,7 +1214,7 @@ def excel_export_d(df):
 
 def excel_export_q(df):
     name_structure = f'Quotes_{ct_o()}.xlsx'
-    output_filename = PARENT_DIR / name_structure
+    output_filename = PARENT_DIR / "results" / name_structure
     with pd.ExcelWriter(output_filename, mode='w') as writer:
         df.to_excel(writer, sheet_name='Processed')
     print(f"{ct()} - Results are exported to: {output_filename}.\n")
@@ -1224,7 +1224,7 @@ def excel_export_q(df):
 def browser_display(df):
     print(f"{ct()} - Displaying results in the default web browser...\n")
     tabledisplay=df.to_html(index=False)
-    output_path = PARENT_DIR / "Results_display.html"
+    output_path = PARENT_DIR / "results" / "Results_display.html"
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(tabledisplay)
     try:
