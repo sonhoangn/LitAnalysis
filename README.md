@@ -16,6 +16,7 @@ Latest update added a new feature allows users to perform an in-depth analysis o
   ```
   - The output executable program could then be found in the "dist" folder in the root directory.
 ## [Usage](#usage)
+  - Make sure that you have already registered for an API Key to use Google Gemini API at Google AI Studio: https://aistudio.google.com/prompts/new_chat, or via Google Cloud Console: https://console.cloud.google.com/
   - Perform installation and run the Literature_Analyzer.exe to start the program. 
   - OR Run the gui_2.py to start the program
   - OR Run the following commands on your terminal (make sure the terminal is at the root location of your project)
