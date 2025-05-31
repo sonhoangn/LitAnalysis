@@ -59,7 +59,8 @@ def genai_config(key, model):
     7. Identify Key Areas of Interest in the Research Paper based on the example list below.
     8. Based on the content decide whether the Research Paper belongs to any of most common types of research papers as listed below.
     9. Cite the exact sentences and/or data found in the Research Paper Content that is most relevant to the goal of the Research Paper.
-    10. Provide an APA Citation for the Research Paper following the style of the APA 7th Edition.
+    10. List out any implications, gaps or limitations for future research that the Research Paper has or implies. 
+    11. Provide an APA Citation for the Research Paper following the style of the APA 7th Edition.
 
     Key Areas of Interest:
 
@@ -94,10 +95,12 @@ def genai_config(key, model):
     - Research Purpose: Theoretical or Applied.
     - Research discussion: key discussions (no more than 2 sentences).
     - Research reliability: Low or High.
+    - Implications and gaps: list out implications and gaps from the research paper.
     - Quote 1: quote. (Must be relevant to Key Areas of Interest)
     - Quote 2: quote. (Must be relevant to Research Question, up to 3 questions only)
     - Quote 3: quote. (Must be relevant to Research goal)
     - Quote 4: quote. (Must be relevant to Research methodology)
+    - Quote 5: quote. (Must be relevant to Implications and gaps)
     - Reference: APA 7th Edition style.
     
     Response Example:
@@ -114,10 +117,12 @@ def genai_config(key, model):
     - Research Purpose: Theoretical.
     - Research discussion: The review indicates a growing interest in AR within industrial operations, particularly in assembly and maintenance, and highlights the increasing adoption of mobile devices and HMDs for AR implementation. It also points out the need for further research in unexplored areas and economic assessments of AR solutions..
     - Research reliability: High.
+    - Implications and gaps: Future research should address several limitations and gaps identified in this systematic review.  These include the risk of bias due to a single author conducting the review, the limited number of studies analyzed (only 59 from Web of Science), the exclusion of publication types beyond journal articles, the variability in data analysis methods across studies, the lack of longitudinal studies to assess the long-term effects of gamification, and the need for more comprehensive demographic considerations (gender, age, school setting).  Furthermore, standardization of measurement approaches is crucial for ensuring consistent and comparable results across different contexts.
     - Quote 1: "Circular Economy is an economic system aimed at eliminating waste and the continual use of resources through principles such as recycling, reuse, and resource efficiency. It contrasts with the traditional linear economy, which typically follows a "take, make, dispose" model."
     - Quote 2: "Conducting a structured literature review, using secondary data from published articles in peer-reviewed journals published between 2010 and 2024 through content and meta analysis, we address the below Research Questions (RQs). RQ1: What are the emerging trends and theories applied in the research of CE adoption in SMEs? RQ2: What are the drivers/enablers, issues, and challenges linked to the adoption of the CE in SMEs? RQ3: What strategies (e.g., energy and resource efficiency, waste management, wellbeing, corporate social responsibility), practices, and frameworks are utilized for CE adoption in SMEs?"
     - Quote 3: "The literature so far has mostly focused on supply chains or large corporations. Thus, our review identifies specific drivers, challenges, and strategies related to the CE in SMEs. There are existing papers on the implementation of the CE from a supply chain perspective. This study helps in the adoption of the CE from an SME perspective through a framework grounded in the literature."
     - Quote 4: "This study adopts a structured literature review approach. To achieve the aims of the research the authors have adapted the systematic review procedures outlined by [49] that consist of three stages: planning, execution, and reporting. The approach has been followed to combat the potential effect of researchers’ bias and to ensure that a traceable path has been followed.", " In order to achieve up-to-date reporting guidance, we also followed the Preferred Reporting Items for Systematic Reviews and Meta-Analysis (PRISMA) statement published in 2020. As mentioned by [52], “familiarity with PRISMA 2020 statement is useful when planning and conducting systematic reviews to ensure that all recommended information is captured”."
+    - Quote 5: "This review is constrained by several limitations. Firstly, it’s important to note that, despite the use of the PRISMA flow and checklist, there is a severe risk of bias due to the author working alone on this study. Secondly, only articles published in journals indexed in Web of Science were included, resulting in the analysis of only 59 articles. Given the relatively small number of publications, it is important to acknowledge the need for future empirical investigations of gamified practices utilizing a broader range of databases beyond the Web of Science. Additionally, future research should consider not only journal articles but also book chapters, conference proceedings, review articles, conceptual papers, and other publication types to ensure a comprehensive coverage of information from diverse and credible sources. Furthermore, this review focused on studies published in the first trimester of 2024. Another limitation pertains to the variability in data analysis procedures utilized across the reviewed publications. Furthermore, the lack of longitudinal studies examining the sustained impact of gamification on student learning is a notable limitation. To address this gap, future research should prioritize conducting longitudinal evaluations to better understand the long-term effects of gamified interventions on student learning outcomes. Finally, we recommend that future studies consider other demographic variables such as gender, age, and school settings (rural vs. urban). This approach would facilitate a more comprehensive understanding of the effectiveness of gamified interventions across different contexts and populations."
     - Reference: Mura, M. D., & Dini, G. (2021). Augmented reality in assembly Systems: state of the art and future perspectives. In IFIP advances in information and communication technology (pp. 3–22). https://doi.org/10.1007/978-3-030-72632-4_1.
     
     """
@@ -588,6 +593,12 @@ def response_data_extraction(data, model):
         else:
             reliability = "N/A"
 
+        line1 = [line for line in response.text.split("\n") if line.startswith("- Implications and gaps: ")]
+        if line1:
+            imp_gaps = line1[0].split(": ")[1].strip()
+        else:
+            imp_gaps = "N/A"
+
         line1 = [line for line in response.text.split("\n") if line.startswith("- Quote 1: ")]
         if line1:
             quote1 = line1[0].split(": ")[1].strip()
@@ -612,6 +623,12 @@ def response_data_extraction(data, model):
         else:
             quote4 = "N/A"
 
+        line1 = [line for line in response.text.split("\n") if line.startswith("- Quote 5: ")]
+        if line1:
+            quote5 = line1[0].split(": ")[1].strip()
+        else:
+            quote5 = "N/A"
+
         line1 = [line for line in response.text.split("\n") if line.startswith("- Reference: ")]
         if line1:
             reference = line1[0].split(": ")[1].strip()
@@ -631,10 +648,12 @@ def response_data_extraction(data, model):
         discussion = "N/A"
         reliability = "N/A"
         reference = "N/A"
+        imp_gaps = "N/A"
         quote1 = "N/A"
         quote2 = "N/A"
         quote3 = "N/A"
         quote4 = "N/A"
+        quote5 = "N/A"
 
     # Turn these on while performing debug
     # print(f"{ct()} - Relevance: {relevance}."
@@ -649,7 +668,7 @@ def response_data_extraction(data, model):
     #       f"\n - Discussion: {discussion}."
     #       f"\n - Reliability: {reliability}."
     #       f"\n - Reference: {reference}")
-    return relevance, rel_level, area, research_question, goal, category, rtype, summary, methodology, purpose, discussion, reliability, reference, quote1, quote2, quote3, quote4
+    return relevance, rel_level, area, research_question, goal, category, rtype, summary, methodology, purpose, discussion, reliability, imp_gaps, reference, quote1, quote2, quote3, quote4, quote5
 
 # Define method to extract data from response
 def response_data_extraction_d(data, model):
@@ -1107,14 +1126,14 @@ def process_loop_b(dir, model):
             #
             # results.append((index, filename, relevance, rel_level, area, goal, category, rtype, summary, methodology, purpose, discussion, reliability, quotes, reference))
 
-            relevance, rel_level, area, research_question, goal, category, rtype, summary, methodology, purpose, discussion, reliability, reference, quote1, quote2, quote3, quote4=response_data_extraction(content, model)
+            relevance, rel_level, area, research_question, goal, category, rtype, summary, methodology, purpose, discussion, reliability, imp_gaps, reference, quote1, quote2, quote3, quote4, quote5=response_data_extraction(content, model)
 
-            results.append((index, filename, relevance, rel_level, area, research_question, goal, category, rtype, summary, methodology, purpose, discussion, reliability, quote1, quote2, quote3, quote4, reference))
+            results.append((index, filename, relevance, rel_level, area, research_question, goal, category, rtype, summary, methodology, purpose, imp_gaps, discussion, reliability, quote1, quote2, quote3, quote4, quote5, reference))
             index+=1
             print(f"{ct()} - Completed analyzing document: {filename}.\n")
             time.sleep(6)
     print(f"{ct()} - All PDF files in {dir} have been processed. Exporting to data table...\n")
-    df_results = pd.DataFrame(results, columns=["No.", "Title", "Relevance", "Relevance Level", "Key Areas of Interest", "Research Question", "Research Goal", "Research Category", "Research Type", "Summary", "Methodologies Used", "Research Purpose", "Discussions Addressed", "Reliability Level", "Quote 1 - Key Area of Interest", "Quote 2 - Research Question", "Quote 3 - Research Goal", "Quote 4 - Methodology", "Reference"])
+    df_results = pd.DataFrame(results, columns=["No.", "Title", "Relevance", "Relevance Level", "Key Areas of Interest", "Research Question", "Research Goal", "Research Category", "Research Type", "Summary", "Methodologies Used", "Research Purpose", "Implications and Gaps", "Discussions Addressed", "Reliability Level", "Quote 1 - Key Area of Interest", "Quote 2 - Research Question", "Quote 3 - Research Goal", "Quote 4 - Methodology", "Quote 5 - Implications and gaps", "Reference"])
     return df_results
 
 def process_loop_d(dir, model):
