@@ -49,7 +49,7 @@ canvas = Canvas(
 
 canvas.place(x = 0, y = 0)
 image_image_1 = PhotoImage(
-    file=relative_to_assets("bg_2.png"))
+    file=relative_to_assets("bg_2_n.png"))
 image_1 = canvas.create_image(
     625.0,
     222.0,
@@ -389,7 +389,7 @@ llm_combobox.place(
 )
 
 entry_image_4 = PhotoImage(
-    file=relative_to_assets("conv_cbox.png"))
+    file=relative_to_assets("conv_cbox_n.png"))
 entry_bg_4 = canvas.create_image(
     844.5,
     219.5,
@@ -397,8 +397,8 @@ entry_bg_4 = canvas.create_image(
 )
 conv = Text(
     bd=0,
-    bg="#000000",
-    fg="#000716",
+    bg="#ffffff",
+    fg="#000000",
     highlightthickness=0
 )
 conv.place(
@@ -433,11 +433,16 @@ class StdoutRedirector(object):
         self.ter_dis = ter_dis
         self.conv_box = conv_box
         self.ter_dis.tag_config("output", foreground="#8cffff")
-        self.conv_box.tag_config("content", foreground="#56ff3c")
-        self.conv_box.tag_config("title", foreground="#ffff78")
-        self.conv_box.tag_config("p_name", foreground="#ff50f3")
-        self.conv_box.tag_config("separator", foreground="#ffcc78")
-        self.conv_box.tag_config("separator_s", foreground="#500068")
+        # self.conv_box.tag_config("content", foreground="#56ff3c")
+        # self.conv_box.tag_config("title", foreground="#ffff78")
+        # self.conv_box.tag_config("p_name", foreground="#ff50f3")
+        # self.conv_box.tag_config("separator", foreground="#ffcc78")
+        # self.conv_box.tag_config("separator_s", foreground="#500068")
+        self.conv_box.tag_config("content", foreground="#030c26")
+        self.conv_box.tag_config("title", foreground="#1d2ab5")
+        self.conv_box.tag_config("p_name", foreground="#411a8a")
+        self.conv_box.tag_config("separator", foreground="#914017")
+        self.conv_box.tag_config("separator_s", foreground="#567506")
         self.ter_dis.tag_config("user", foreground="#56ff3c")
 
     def write(self, string):
