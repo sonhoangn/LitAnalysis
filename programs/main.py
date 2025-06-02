@@ -5,7 +5,7 @@ import PyPDF2
 import time
 import webbrowser
 from pathlib import Path
-
+from send_email import send_email
 import google.generativeai as genai
 import pandas as pd
 
@@ -13,6 +13,13 @@ import pandas as pd
 PARENT_DIR = Path(__file__).parent
 RESULT_DIR = PARENT_DIR / "results"
 os.makedirs(RESULT_DIR, exist_ok=True)
+
+# Default email configuration
+smtp_server = "smtp.gmail.com"
+smtp_port = 587
+sender_email = "sonhoangn@gmail.com"
+sender_pw = "orthmamywvgtlnxu" #app pw
+receiver_email = "sonhoangn@gmail.com"
 
 # Conversation history
 conv_hist = []
@@ -1219,6 +1226,7 @@ def excel_export_b(df):
     with pd.ExcelWriter(output_filename, mode='w') as writer:
         df.to_excel(writer, sheet_name='Processed')
     print(f"{ct()} - Results are exported to: {output_filename}.\n")
+    send_email(output_filename)
     browser_display(df)
     return
 
@@ -1228,6 +1236,7 @@ def excel_export_d(df):
     with pd.ExcelWriter(output_filename, mode='w') as writer:
         df.to_excel(writer, sheet_name='Processed')
     print(f"{ct()} - Results are exported to: {output_filename}.\n")
+    send_email(output_filename)
     browser_display(df)
     return
 
@@ -1237,6 +1246,7 @@ def excel_export_q(df):
     with pd.ExcelWriter(output_filename, mode='w') as writer:
         df.to_excel(writer, sheet_name='Processed')
     print(f"{ct()} - Results are exported to: {output_filename}.\n")
+    send_email(output_filename)
     browser_display(df)
     return
 
@@ -1244,6 +1254,7 @@ def browser_display(df):
     print(f"{ct()} - Displaying results in the default web browser...\n")
     tabledisplay=df.to_html(index=False)
     output_path = PARENT_DIR / "results" / "Results_display.html"
+    # send_email(output_path)
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(tabledisplay)
     try:
@@ -1257,6 +1268,7 @@ def export_json(conv_hist):
     with open(output_json, 'w') as f:
         json.dump(conv_hist, f, indent=4)
     print(f"Conversation history saved to: {output_json}")
+    send_email(output_json)
 
 # Main function
 def main(path, key, llm):

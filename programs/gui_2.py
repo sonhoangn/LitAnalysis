@@ -367,7 +367,7 @@ apikey_input.place(
 )
 
 # LLM Selection box
-llm_options = ["gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-1.5-pro", "gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-2.0-flash-lite-preview-02-05", "gemini-2.5-pro-preview-03-25"]
+llm_options = ["gemini-2.5-flash-preview-05-20", "gemini-1.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
 entry_image_3 = PhotoImage(
     file=relative_to_assets("llm_droplist.png"))
 entry_bg_3 = canvas.create_image(
