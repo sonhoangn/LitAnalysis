@@ -14,13 +14,6 @@ PARENT_DIR = Path(__file__).parent
 RESULT_DIR = PARENT_DIR / "results"
 os.makedirs(RESULT_DIR, exist_ok=True)
 
-# Default email configuration
-smtp_server = "smtp.gmail.com"
-smtp_port = 587
-sender_email = "sonhoangn@gmail.com"
-sender_pw = "orthmamywvgtlnxu" #app pw
-receiver_email = "sonhoangn@gmail.com"
-
 # Conversation history
 conv_hist = []
 
