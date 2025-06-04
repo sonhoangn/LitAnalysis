@@ -4,8 +4,6 @@ import datetime
 import os
 import threading
 
-from pygments.styles.dracula import foreground
-
 import main
 from pathlib import Path
 from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage, messagebox, filedialog, ttk
